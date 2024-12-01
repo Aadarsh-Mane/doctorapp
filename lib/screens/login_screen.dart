@@ -1,12 +1,14 @@
+import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
+import 'package:doctorapp/Nurse/NurseMainScreen.dart';
+import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
-import 'package:doctorapp/screens/MainScreen.dart';
-import 'package:doctorapp/screens/assigned_patient_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LoginScreen extends ConsumerWidget {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  String selectedUsertype = 'nurse'; // Default to doctor
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -18,6 +20,18 @@ class LoginScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            DropdownButton<String>(
+              value: selectedUsertype,
+              items: <String>['doctor', 'nurse'].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                selectedUsertype = newValue!;
+              },
+            ),
             TextField(
               controller: emailController,
               decoration: InputDecoration(labelText: "Email"),
@@ -30,27 +44,34 @@ class LoginScreen extends ConsumerWidget {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                print(
-                    "Attempting login with email: ${emailController.text} and password: ${passwordController.text}");
-
                 try {
-                  // Perform login and await response
                   await authController.login(
                     emailController.text,
                     passwordController.text,
+                    selectedUsertype,
                   );
 
-                  // Navigate to AssignedPatientsScreen after a successful login
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MainScreen(),
-                    ),
-                  );
+                  // Check and navigate based on usertype
+                  final usertype = await authController.getUsertype();
+                  if (usertype == 'doctor') {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              DoctorMainScreen()), // Update this to your actual screen
+                    );
+                  } else if (usertype == 'nurse') {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              PatientListScreen()), // Update this to your actual screen
+                    );
+                  }
                 } catch (e) {
-                  // Handle login failure (e.g., show error message)
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Login failed: ${e.toString()}")),
+                    SnackBar(
+                        content: Text("Login failed: Invalid credentials")),
                   );
                 }
               },
