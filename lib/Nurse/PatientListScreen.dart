@@ -1,5 +1,5 @@
 import 'package:doctorapp/Nurse/PatientDetailScreen.dart';
-import 'package:doctorapp/models/getPatientModel.dart';
+import 'package:doctorapp/Nurse/PatientDetailScreen2.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,12 +27,11 @@ class PatientListScreen extends ConsumerWidget {
                 title: Text(patient.name),
                 subtitle: Text('Patient ID: ${patient.patientId}'),
                 onTap: () {
-                  // Navigate to PatientDetailScreen and pass the patient object
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          PatientDetailScreen1(patient: patient),
+                          PatientDetailScreen2(patient: patient),
                     ),
                   );
                 },

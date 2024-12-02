@@ -1,6 +1,7 @@
 // lib/repositories/auth_repository.dart
 import 'dart:convert';
 import 'package:doctorapp/models/getDoctorProfile.dart';
+import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/models/getPatientModel.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -187,37 +188,5 @@ class AuthRepository {
     } catch (e) {
       throw Exception('Error: $e');
     }
-  }
-}
-
-class Patient1 {
-  final String id;
-  final String patientId;
-  final String name;
-  final int age;
-  final String gender;
-  final String contact;
-  final String address;
-
-  Patient1({
-    required this.id,
-    required this.patientId,
-    required this.name,
-    required this.age,
-    required this.gender,
-    required this.contact,
-    required this.address,
-  });
-
-  factory Patient1.fromJson(Map<String, dynamic> json) {
-    return Patient1(
-      id: json['_id'],
-      patientId: json['patientId'],
-      name: json['name'],
-      age: json['age'],
-      gender: json['gender'],
-      contact: json['contact'],
-      address: json['address'],
-    );
   }
 }
