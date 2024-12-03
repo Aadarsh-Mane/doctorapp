@@ -1,6 +1,6 @@
 import 'package:doctorapp/constants/app_color.dart';
 import 'package:doctorapp/screens/HomeScreen.dart';
-import 'package:doctorapp/screens/assigned_patient_screen.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {

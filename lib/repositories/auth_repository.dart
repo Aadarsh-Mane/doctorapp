@@ -207,6 +207,7 @@ class AuthRepository {
           'Authorization': 'Bearer $token',
         },
       );
+      print(response.body); // Inspect the API response
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['patients'] as List<dynamic>;
@@ -218,6 +219,27 @@ class AuthRepository {
     } catch (e) {
       print('Error fetching assigned patients: $e');
       rethrow;
+    }
+  }
+
+  Future<bool> assignPatientToLab(
+      String admissionId, String patientId, String labTestName) async {
+    final url = Uri.parse('http://192.168.0.103:3000/doctors/assignPatient');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'admissionId': admissionId,
+        'patientId': patientId,
+        'labTestName': labTestName,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return true; // Patient successfully assigned to the lab
+    } else {
+      print("Failed to assign patient: ${response.statusCode}");
+      return false; // Failed to assign
     }
   }
 }

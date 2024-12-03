@@ -1,7 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
-import 'package:doctorapp/screens/assigned_patient_screen.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
 import 'package:flutter/material.dart';
 
 class DoctorMainScreen extends StatefulWidget {
@@ -49,7 +49,8 @@ class NurseDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Text('Nurse Menu', style: TextStyle(color: Colors.white)),
+            child: Text('''Doctor's Menu''',
+                style: TextStyle(color: Colors.white)),
             decoration: BoxDecoration(color: Colors.blue),
           ),
           ListTile(

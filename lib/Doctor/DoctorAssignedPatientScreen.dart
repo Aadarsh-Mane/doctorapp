@@ -1,3 +1,4 @@
+import 'package:doctorapp/Doctor/DoctorPatientDetailScreen.dart';
 import 'package:doctorapp/Nurse/PatientDetailScreen2.dart';
 import 'package:doctorapp/models/getPatientModel.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
@@ -25,7 +26,13 @@ class AssignedPatientsScreen extends ConsumerWidget {
               title: Text(patient.name),
               subtitle: Text('Age: ${patient.age}, Gender: ${patient.gender}'),
               onTap: () {
-                // Navigate to patient details if needed
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PatientDetailScreen4(patient: patient),
+                  ),
+                );
               },
             );
           },
