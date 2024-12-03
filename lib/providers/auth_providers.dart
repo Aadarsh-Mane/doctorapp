@@ -57,11 +57,11 @@ final authControllerProvider = StateNotifierProvider<AuthController, bool>(
   (ref) => AuthController(ref),
 );
 
-final assignedPatientsProvider = FutureProvider<List<Patient>>((ref) async {
-  final authRepository = ref.read(authRepositoryProvider);
-  return await authRepository.fetchAssignedPatients();
-});
 final fetchDoctorProfile = FutureProvider<DoctorProfile>((ref) async {
   final authRepository = ref.read(authRepositoryProvider);
   return await authRepository.fetchDoctorProfile();
+});
+final assignedPatientsProvider = FutureProvider<List<Patient1>>((ref) async {
+  final repository = ref.read(authRepositoryProvider);
+  return await repository.getAssignedPatients();
 });

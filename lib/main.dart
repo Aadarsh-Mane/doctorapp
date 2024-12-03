@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
             if (userType == 'doctor') {
               return DoctorMainScreen(); // Navigate to Doctor's main screen
             } else if (userType == 'nurse') {
-              return PatientListScreen(); // Navigate to Nurse's main screen
+              return NurseMainScreen(); // Navigate to Nurse's main screen
             }
           }
 

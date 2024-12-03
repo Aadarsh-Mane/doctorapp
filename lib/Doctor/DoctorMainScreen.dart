@@ -1,9 +1,8 @@
-import 'package:doctorapp/Doctor/DoctorHomeScreen.dart';
-import 'package:doctorapp/constants/app_color.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
-import 'package:flutter/material.dart';
 import 'package:doctorapp/screens/assigned_patient_screen.dart';
-// Import your color theme
+import 'package:flutter/material.dart';
 
 class DoctorMainScreen extends StatefulWidget {
   @override
@@ -11,123 +10,152 @@ class DoctorMainScreen extends StatefulWidget {
 }
 
 class _DoctorMainScreenState extends State<DoctorMainScreen> {
-  int _selectedIndex = 0; // Track the selected bottom navigation index
+  int _selectedIndex = 0;
 
-  List<Widget> _screens = [
-    DoctorHomeScreen(),
+  // Screens for the bottom navigation bar (3 screens)
+  static List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(), // HomeScreen containing the banner slider
     AssignedPatientsScreen(),
-    AnotherScreen(), // Add other screens here
-    AnotherScreen1(), // Add other screens here
+    LogoutScreen(),
+    // const Center(child: Text("Schedule Screen")),
+    // const Center(child: Text("Patient Info Screen")),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // Update selected index
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Home"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
+      appBar: AppBar(title: Text("Doctor's Dashboard")),
+      drawer: NurseDrawer(), // Custom drawer for better organization
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: DoctorBottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class NurseDrawer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Text('Nurse Menu', style: TextStyle(color: Colors.white)),
+            decoration: BoxDecoration(color: Colors.blue),
+          ),
+          ListTile(
+            title: Text('Settings'),
+            onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => LogoutScreen()),
+                MaterialPageRoute(builder: (context) => PatientListScreen()),
               );
+            },
+          ),
+          ListTile(
+            title: Text('Notifications'),
+            onTap: () {
+              // Handle Notifications navigation
+            },
+          ),
+          ListTile(
+            title: Text('Reports'),
+            onTap: () {
+              // Handle Reports navigation
             },
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.lightBlueTop,
-              AppColors.lightBlueBottom,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: _screens[_selectedIndex], // Show selected screen
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: AppColors.lightBlueTop,
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              title: Text('Home Screen'),
-              onTap: () {
-                Navigator.pop(context);
-                _onItemTapped(0);
-              },
-            ),
+    );
+  }
+}
 
-            ListTile(
-              title: Text('Assigned  Patient'),
-              onTap: () {
-                Navigator.pop(context);
-                _onItemTapped(1);
-              },
-            ),
-            // Add more ListTiles for other screens
-          ],
+class DoctorBottomNavBar extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onItemTapped;
+
+  const DoctorBottomNavBar(
+      {Key? key, required this.selectedIndex, required this.onItemTapped})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      currentIndex: selectedIndex,
+      onTap: onItemTapped,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: 'Assigned Patients',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.logout),
+          label: 'Logout',
+        ),
+      ],
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  // List of images for the carousel
+  final List<String> imgList = [
+    'assets/images/span.png',
+    'assets/images/spandd.png',
+    'assets/images/spando.png',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // Banner Slider
+          CarouselSlider(
+            options: CarouselOptions(
+              autoPlay: true,
+              enlargeCenterPage: true,
+              aspectRatio: 2.0,
+              viewportFraction: 0.8,
+              autoPlayInterval: Duration(seconds: 3),
+            ),
+            items: imgList.map((item) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    item,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                ),
+              );
+            }).toList(),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list_rounded),
-            label: 'Assigned Patients',
+          // Additional Content
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('Welcome to the Nurse\'s Dashboard'),
           ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
-    );
-  }
-}
-
-class AnotherScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Another Screen',
-        style: TextStyle(fontSize: 24),
-      ),
-    );
-  }
-}
-
-class AnotherScreen1 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Another Screen',
-        style: TextStyle(fontSize: 24),
       ),
     );
   }

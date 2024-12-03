@@ -112,7 +112,7 @@ class AuthRepository {
     print("Usertype cleared");
   }
 
-  Future<List<Patient>> fetchAssignedPatients() async {
+  Future<List<Patient1>> fetchAssignedPatients() async {
     final token = await getToken();
     if (token == null) {
       throw Exception('Token not found in SharedPreferences');
@@ -131,7 +131,7 @@ class AuthRepository {
 
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body)['patients'];
-        return data.map((json) => Patient.fromJson(json)).toList();
+        return data.map((json) => Patient1.fromJson(json)).toList();
       } else {
         throw Exception(
             'Failed to fetch patients. Status code: ${response.statusCode}');
@@ -187,6 +187,37 @@ class AuthRepository {
       }
     } catch (e) {
       throw Exception('Error: $e');
+    }
+  }
+
+  Future<List<Patient1>> getAssignedPatients() async {
+    try {
+      // Retrieve the stored token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) {
+        throw Exception('No authentication token found.');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://192.168.0.103:3000/doctors/getAssignedPatients'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['patients'] as List<dynamic>;
+        return data.map((json) => Patient1.fromJson(json)).toList();
+      } else {
+        throw Exception(
+            'Failed to fetch assigned patients. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching assigned patients: $e');
+      rethrow;
     }
   }
 }

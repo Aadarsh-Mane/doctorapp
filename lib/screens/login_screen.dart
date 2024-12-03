@@ -1,17 +1,22 @@
 import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
 import 'package:doctorapp/Nurse/NurseMainScreen.dart';
-import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends ConsumerWidget {
+class LoginScreen extends ConsumerStatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  String selectedUsertype = 'nurse'; // Default to doctor
+  String selectedUsertype =
+      'nurse'; // Default to nurse, could be 'doctor' as well
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authController = ref.read(authControllerProvider.notifier);
 
     return Scaffold(
@@ -20,6 +25,7 @@ class LoginScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            // Dropdown to select user type
             DropdownButton<String>(
               value: selectedUsertype,
               items: <String>['doctor', 'nurse'].map((String value) {
@@ -29,7 +35,10 @@ class LoginScreen extends ConsumerWidget {
                 );
               }).toList(),
               onChanged: (newValue) {
-                selectedUsertype = newValue!;
+                setState(() {
+                  selectedUsertype =
+                      newValue!; // This will trigger a rebuild and update the selected user type
+                });
               },
             ),
             TextField(
@@ -57,15 +66,13 @@ class LoginScreen extends ConsumerWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              DoctorMainScreen()), // Update this to your actual screen
+                          builder: (context) => DoctorMainScreen()),
                     );
                   } else if (usertype == 'nurse') {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              PatientListScreen()), // Update this to your actual screen
+                          builder: (context) => NurseMainScreen()),
                     );
                   }
                 } catch (e) {
