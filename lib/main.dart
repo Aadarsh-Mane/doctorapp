@@ -1,6 +1,5 @@
 import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
 import 'package:doctorapp/Nurse/NurseMainScreen.dart';
-import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

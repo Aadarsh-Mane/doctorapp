@@ -174,6 +174,12 @@ class AuthRepository {
     }
   }
 
+  Future<void> clearAllData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    print("All SharedPreferences data cleared");
+  }
+
   Future<List<Patient1>> fetchPatients() async {
     try {
       final response = await http
@@ -198,7 +204,7 @@ class AuthRepository {
       // Retrieve the stored token
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-
+      print(token);
       if (token == null) {
         throw Exception('No authentication token found.');
       }

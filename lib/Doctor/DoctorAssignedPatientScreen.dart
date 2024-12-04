@@ -11,6 +11,7 @@ class AssignedPatientsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedPatients = ref.watch(assignedPatientsProvider);
+
     final authRepository = ref.read(authRepositoryProvider);
 
     return Scaffold(
