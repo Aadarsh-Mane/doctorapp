@@ -1,10 +1,8 @@
 import 'package:doctorapp/models/getDoctorProfile.dart';
 import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
-import 'package:doctorapp/models/getPatientModel.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository());
 

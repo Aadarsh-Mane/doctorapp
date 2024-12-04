@@ -1,6 +1,5 @@
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:flutter/material.dart';
-import 'package:doctorapp/models/getPatientModel.dart';
 
 class PatientDetailScreen4 extends StatelessWidget {
   final Patient1 patient;

@@ -7,7 +7,6 @@ class AssignedLabsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.refresh(assignedLabsProvider);
     final assignedLabs = ref.watch(assignedLabsProvider);
 
     return Scaffold(
