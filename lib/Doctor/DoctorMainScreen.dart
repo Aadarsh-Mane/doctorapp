@@ -31,7 +31,7 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Doctor's Dashboard")),
-      drawer: NurseDrawer(), // Custom drawer for better organization
+      drawer: DoctorDrawer(), // Custom drawer for better organization
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: DoctorBottomNavBar(
         selectedIndex: _selectedIndex,
@@ -41,7 +41,7 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
   }
 }
 
-class NurseDrawer extends StatelessWidget {
+class DoctorDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -154,7 +154,7 @@ class HomeScreen extends StatelessWidget {
           // Additional Content
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Welcome to the Nurse\'s Dashboard'),
+            child: Text('Welcome to the Doctor\'s Dashboard'),
           ),
         ],
       ),

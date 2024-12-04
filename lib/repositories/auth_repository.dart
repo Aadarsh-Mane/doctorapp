@@ -1,8 +1,11 @@
 // lib/repositories/auth_repository.dart
 import 'dart:convert';
 import 'package:doctorapp/models/getDoctorProfile.dart';
+import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/models/getPatientModel.dart';
+import 'package:doctorapp/providers/auth_providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -222,24 +225,77 @@ class AuthRepository {
     }
   }
 
-  Future<bool> assignPatientToLab(
-      String admissionId, String patientId, String labTestName) async {
+  Future<Map<String, dynamic>> assignPatientToLab({
+    required String patientId,
+    required String admissionId,
+    required String labTestNameGivenByDoctor,
+  }) async {
+    final token = await getToken(); // Retrieve the token from storage
     final url = Uri.parse('http://192.168.0.103:3000/doctors/assignPatient');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'admissionId': admissionId,
-        'patientId': patientId,
-        'labTestName': labTestName,
-      }),
-    );
 
-    if (response.statusCode == 200) {
-      return true; // Patient successfully assigned to the lab
-    } else {
-      print("Failed to assign patient: ${response.statusCode}");
-      return false; // Failed to assign
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'patientId': patientId,
+          'admissionId': admissionId,
+          'labTestNameGivenByDoctor': labTestNameGivenByDoctor,
+        }),
+      );
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': 'Patient assigned to lab successfully',
+        };
+      } else {
+        final error = jsonDecode(response.body);
+        return {
+          'success': false,
+          'message': error['message'] ?? 'Failed to assign patient to lab',
+        };
+      }
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An error occurred: $e',
+      };
     }
   }
+
+  Future<List<AssignedLab>> getAssignedLabs() async {
+    final token = await getToken(); // Retrieve the token from storage
+    if (token == null) {
+      throw Exception('Token not found in SharedPreferences');
+    }
+    final response = await http.get(
+      Uri.parse('http://192.168.0.103:3000/doctors/getDoctorAssignedPatient'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body)['labReports']
+          as List; // Extract the "labReports" key
+      return data.map((json) => AssignedLab.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load assigned labs');
+    }
+  }
+
+  final assignedLabsProvider = FutureProvider<List<AssignedLab>>((ref) async {
+    final authRepository = ref.read(authRepositoryProvider);
+    try {
+      return await authRepository
+          .getAssignedLabs(); // Use repository method to fetch labs
+    } catch (e) {
+      // Handle any errors gracefully
+      throw Exception('Failed to load assigned labs: $e');
+    }
+  });
 }

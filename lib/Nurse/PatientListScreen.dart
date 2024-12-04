@@ -1,9 +1,4 @@
-import 'package:doctorapp/Nurse/PatientDetailScreen.dart';
 import 'package:doctorapp/Nurse/PatientDetailScreen2.dart';
-import 'package:doctorapp/providers/auth_providers.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

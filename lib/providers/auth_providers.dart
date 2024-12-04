@@ -1,4 +1,5 @@
 import 'package:doctorapp/models/getDoctorProfile.dart';
+import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/models/getPatientModel.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
@@ -64,4 +65,9 @@ final fetchDoctorProfile = FutureProvider<DoctorProfile>((ref) async {
 final assignedPatientsProvider = FutureProvider<List<Patient1>>((ref) async {
   final repository = ref.read(authRepositoryProvider);
   return await repository.getAssignedPatients();
+});
+
+final assignedLabsProvider = FutureProvider<List<AssignedLab>>((ref) async {
+  final authRepository = ref.read(authRepositoryProvider);
+  return await authRepository.getAssignedLabs();
 });
