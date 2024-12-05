@@ -1,17 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
+import 'package:doctorapp/Nurse/PatientListScreen.dart';
+import 'package:doctorapp/providers/auth_providers.dart';
+import 'package:doctorapp/screens/LogoutScreen.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
+import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
-import 'package:doctorapp/Nurse/PatientListScreen.dart';
-import 'package:doctorapp/screens/LogoutScreen.dart';
-import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
-import 'package:flutter/material.dart';
-
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
-import 'package:doctorapp/Nurse/PatientListScreen.dart';
-import 'package:doctorapp/screens/LogoutScreen.dart';
-import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
-import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DoctorMainScreen extends StatefulWidget {
   @override
@@ -39,7 +35,6 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Doctor's Dashboard"),
-        centerTitle: true,
       ),
       drawer: const DoctorDrawer(),
       body: SafeArea(
@@ -59,41 +54,78 @@ class DoctorDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
+      backgroundColor: Colors.white,
+      child: Column(
+        children: [
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: Colors.blue,
+            decoration: const BoxDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    radius: 40,
+                    backgroundImage: AssetImage(
+                        'assets/images/sk.png'), // Adjusted image size
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  "Powered By\n20's Developers",
+                  style: TextStyle(color: Colors.black, fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            child: const Text(
-              "Doctor's Menu",
-              style: TextStyle(color: Colors.white, fontSize: 24),
+          ),
+          Expanded(
+            child: ListView(
+              children: [
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.assignment_turned_in_sharp),
+                    title: const Text('Attendance'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => PatientListScreen(),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.assignment_turned_in_sharp),
+                    title: const Text('Assigned Labs'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) =>
+                      AssignedLabsScreen(),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.notifications),
+                    title: const Text('Notifications'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => const Scaffold(
+                    body: Center(child: Text('Notifications Screen')),
+                  ),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.report),
+                    title: const Text('Reports'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => const Scaffold(
+                    body: Center(child: Text('Reports Screen')),
+                  ),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+              ],
             ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => PatientListScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: const Text('Notifications'),
-            onTap: () {
-              // Handle Notifications navigation
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.report),
-            title: const Text('Reports'),
-            onTap: () {
-              // Handle Reports navigation
-            },
           ),
         ],
       ),
@@ -118,8 +150,8 @@ class DoctorBottomNavBar extends StatelessWidget {
       height: 60.0,
       items: const <Widget>[
         Icon(Icons.home, size: 30, color: Colors.white),
-        Icon(Icons.calendar_today, size: 30, color: Colors.white),
-        Icon(Icons.assessment, size: 30, color: Colors.white),
+        Icon(Icons.assignment_ind_outlined, size: 30, color: Colors.white),
+        Icon(Icons.local_bar_sharp, size: 30, color: Colors.white),
         Icon(Icons.logout, size: 30, color: Colors.white),
       ],
       color: Colors.blue,
@@ -132,7 +164,7 @@ class DoctorBottomNavBar extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final List<String> imgList = [
     'assets/images/span.png',
     'assets/images/spandd.png',
@@ -140,7 +172,9 @@ class HomeScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final doctorProfile = ref.watch(fetchDoctorProfile);
+
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -175,9 +209,53 @@ class HomeScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Welcome to the Doctor\'s Dashboard',
+              'Welcome to the Spandan Hospital\ ',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+          ),
+          doctorProfile.when(
+            data: (profile) => Card(
+              elevation: 8,
+              margin: const EdgeInsets.all(16.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: AssetImage('assets/images/doctor1.png'),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Welcome Doctor : ${profile.doctorName}",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "Email : ${profile.email}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors
+                                .black, // Changed to black for readability
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            loading: () => const CircularProgressIndicator(),
+            error: (error, stackTrace) => Text('Error: $error'),
           ),
         ],
       ),
