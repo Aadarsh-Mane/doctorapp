@@ -1,5 +1,4 @@
 import 'package:doctorapp/models/getLabsPatient.dart';
-import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
