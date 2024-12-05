@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:doctorapp/Check.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Doctor/DoctorPatientDetailScreen.dart';
@@ -7,7 +5,6 @@ import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 
 final assignedPatientsProvider =
     StateNotifierProvider<AssignedPatientsNotifier, AsyncValue<List<Patient1>>>(
@@ -19,13 +16,25 @@ final assignedPatientsProvider =
   },
 );
 
-class AssignedPatientsScreen extends ConsumerWidget {
+class AssignedPatientsScreen extends ConsumerStatefulWidget {
   const AssignedPatientsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  _AssignedPatientsScreenState createState() => _AssignedPatientsScreenState();
+}
+
+class _AssignedPatientsScreenState
+    extends ConsumerState<AssignedPatientsScreen> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Trigger refresh when screen is opened
+    ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final assignedPatients = ref.watch(assignedPatientsProvider);
-    ref.refresh(assignedPatientsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -59,7 +68,6 @@ class AssignedPatientsScreen extends ConsumerWidget {
           itemCount: patients.length,
           itemBuilder: (context, index) {
             final patient = patients[index];
-
             return Dismissible(
               key: Key(patient.id), // Unique key for each item
               direction:
@@ -70,10 +78,15 @@ class AssignedPatientsScreen extends ConsumerWidget {
 
                 if (shouldDischarge == true) {
                   await _dischargePatient(patient, ref);
+                  // Remove patient from the list after successful discharge
+                  ref
+                      .read(assignedPatientsProvider.notifier)
+                      .removePatient(patient);
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Patient not discharged')),
-                  );
+                  // If not discharged, re-fetch the patients to refresh the state
+                  ref
+                      .refresh(assignedPatientsProvider.notifier)
+                      .fetchAssignedPatients();
                 }
               },
               background: Container(
@@ -89,6 +102,13 @@ class AssignedPatientsScreen extends ConsumerWidget {
                 title: Text(patient.name),
                 subtitle:
                     Text('Age: ${patient.age}, Gender: ${patient.gender}'),
+                trailing: IconButton(
+                  icon: const Icon(Icons.label),
+                  onPressed: () async {
+                    // Handle assigning patient to a lab
+                    await _handleAssignLab(context, patient, ref);
+                  },
+                ),
                 onTap: () {
                   // Navigate to patient details
                   Navigator.push(
@@ -150,13 +170,82 @@ class AssignedPatientsScreen extends ConsumerWidget {
       );
 
       if (result['success']) {
-        print(result);
+        // Successfully discharged patient
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Patient discharged successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
         ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
       } else {
-        print("");
+        // If discharge failed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to discharge patient'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } catch (e) {
       print('Error discharging patient: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error discharging patient: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _handleAssignLab(
+      BuildContext context, Patient1 patient, WidgetRef ref) async {
+    final authRepository = ref.read(authRepositoryProvider);
+
+    // Select Admission ID
+    final admissionId = await showDialog<String>(
+      context: context,
+      builder: (context) => SelectAdmissionDialog(
+        admissionRecords: patient.admissionRecords,
+      ),
+    );
+
+    if (admissionId == null) return; // Exit if no admission selected
+
+    // Collect Lab Test Name
+    final labTestNameGivenByDoctor = await showDialog<String>(
+      context: context,
+      builder: (context) => AssignLabDialog(),
+    );
+
+    if (labTestNameGivenByDoctor == null || labTestNameGivenByDoctor.isEmpty) {
+      return; // Exit if no lab test name is provided
+    }
+
+    try {
+      // Call API to assign patient to lab
+      final result = await authRepository.assignPatientToLab(
+        patientId: patient.id,
+        admissionId: admissionId,
+        labTestNameGivenByDoctor: labTestNameGivenByDoctor,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: result['success'] ? Colors.green : Colors.red,
+        ),
+      );
+
+      // Refresh the patient list after assigning
+      ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to assign lab: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

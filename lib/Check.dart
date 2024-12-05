@@ -24,4 +24,12 @@ class AssignedPatientsNotifier
   Future<void> refreshPatients() async {
     await fetchAssignedPatients();
   }
+
+  void removePatient(Patient1 patient) {
+    state.whenData((patients) {
+      final updatedPatients = List<Patient1>.from(patients)
+        ..removeWhere((item) => item.id == patient.id); // Remove the patient
+      state = AsyncValue.data(updatedPatients); // Update the state
+    });
+  }
 }
