@@ -1,4 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
+import 'package:doctorapp/Nurse/PatientListScreen.dart';
+import 'package:doctorapp/screens/LogoutScreen.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
+import 'package:flutter/material.dart';
+
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
@@ -12,13 +21,11 @@ class DoctorMainScreen extends StatefulWidget {
 class _DoctorMainScreenState extends State<DoctorMainScreen> {
   int _selectedIndex = 0;
 
-  // Screens for the bottom navigation bar (3 screens)
-  static List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(), // HomeScreen containing the banner slider
+  static final List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
     AssignedPatientsScreen(),
+    AssignedLabsScreen(),
     LogoutScreen(),
-    // const Center(child: Text("Schedule Screen")),
-    // const Center(child: Text("Patient Info Screen")),
   ];
 
   void _onItemTapped(int index) {
@@ -30,9 +37,14 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Doctor's Dashboard")),
-      drawer: DoctorDrawer(), // Custom drawer for better organization
-      body: _widgetOptions.elementAt(_selectedIndex),
+      appBar: AppBar(
+        title: const Text("Doctor's Dashboard"),
+        centerTitle: true,
+      ),
+      drawer: const DoctorDrawer(),
+      body: SafeArea(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
       bottomNavigationBar: DoctorBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
@@ -42,6 +54,8 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
 }
 
 class DoctorDrawer extends StatelessWidget {
+  const DoctorDrawer({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -49,12 +63,17 @@ class DoctorDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Text('''Doctor's Menu''',
-                style: TextStyle(color: Colors.white)),
-            decoration: BoxDecoration(color: Colors.blue),
+            decoration: const BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: const Text(
+              "Doctor's Menu",
+              style: TextStyle(color: Colors.white, fontSize: 24),
+            ),
           ),
           ListTile(
-            title: Text('Settings'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
             onTap: () {
               Navigator.push(
                 context,
@@ -63,13 +82,15 @@ class DoctorDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Notifications'),
+            leading: const Icon(Icons.notifications),
+            title: const Text('Notifications'),
             onTap: () {
               // Handle Notifications navigation
             },
           ),
           ListTile(
-            title: Text('Reports'),
+            leading: const Icon(Icons.report),
+            title: const Text('Reports'),
             onTap: () {
               // Handle Reports navigation
             },
@@ -84,35 +105,34 @@ class DoctorBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
 
-  const DoctorBottomNavBar(
-      {Key? key, required this.selectedIndex, required this.onItemTapped})
-      : super(key: key);
+  const DoctorBottomNavBar({
+    Key? key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: selectedIndex,
-      onTap: onItemTapped,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'Assigned Patients',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.logout),
-          label: 'Logout',
-        ),
+    return CurvedNavigationBar(
+      index: selectedIndex,
+      height: 60.0,
+      items: const <Widget>[
+        Icon(Icons.home, size: 30, color: Colors.white),
+        Icon(Icons.calendar_today, size: 30, color: Colors.white),
+        Icon(Icons.assessment, size: 30, color: Colors.white),
+        Icon(Icons.logout, size: 30, color: Colors.white),
       ],
+      color: Colors.blue,
+      buttonBackgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade100,
+      animationCurve: Curves.easeInOut,
+      animationDuration: const Duration(milliseconds: 300),
+      onTap: onItemTapped,
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  // List of images for the carousel
   final List<String> imgList = [
     'assets/images/span.png',
     'assets/images/spandd.png',
@@ -124,21 +144,22 @@ class HomeScreen extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Banner Slider
           CarouselSlider(
             options: CarouselOptions(
               autoPlay: true,
               enlargeCenterPage: true,
               aspectRatio: 2.0,
               viewportFraction: 0.8,
-              autoPlayInterval: Duration(seconds: 3),
+              autoPlayInterval: const Duration(seconds: 3),
             ),
             items: imgList.map((item) {
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                margin: const EdgeInsets.symmetric(horizontal: 6.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+                  boxShadow: const [
+                    BoxShadow(color: Colors.grey, blurRadius: 5.0)
+                  ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
@@ -151,10 +172,12 @@ class HomeScreen extends StatelessWidget {
               );
             }).toList(),
           ),
-          // Additional Content
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('Welcome to the Doctor\'s Dashboard'),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Welcome to the Doctor\'s Dashboard',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

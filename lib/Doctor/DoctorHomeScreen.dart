@@ -17,7 +17,7 @@ class DoctorHomeScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.lightBlueTop,
+              const Color.fromARGB(255, 98, 146, 200),
               AppColors.lightBlueBottom,
             ],
             begin: Alignment.topCenter,
