@@ -22,6 +22,7 @@ class AuthRepository {
           'password': password,
         }),
       );
+      print(response.body);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
@@ -30,6 +31,7 @@ class AuthRepository {
 
         await storeToken(token);
         await storeUsertype(usertype);
+
         return token;
       } else if (response.statusCode == 401) {
         print("Invalid credentials provided");
@@ -99,7 +101,7 @@ class AuthRepository {
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
-    print("Retrieved token from SharedPreferences: $token");
+    // print("Retrieved token from SharedPreferences: $token");
     return token;
   }
 
@@ -216,7 +218,8 @@ class AuthRepository {
           'Authorization': 'Bearer $token',
         },
       );
-      print(response.body); // Inspect the API response
+      // print(response.body); // Inspect the API response
+      // print('Full response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['patients'] as List<dynamic>;
@@ -285,6 +288,7 @@ class AuthRepository {
         'Authorization': 'Bearer $token',
       },
     );
+    // print(response.body);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['labReports']
           as List; // Extract the "labReports" key
@@ -294,14 +298,17 @@ class AuthRepository {
     }
   }
 
-  final assignedLabsProvider = FutureProvider<List<AssignedLab>>((ref) async {
-    final authRepository = ref.read(authRepositoryProvider);
-    try {
-      return await authRepository
-          .getAssignedLabs(); // Use repository method to fetch labs
-    } catch (e) {
-      // Handle any errors gracefully
-      throw Exception('Failed to load assigned labs: $e');
-    }
-  });
+  Future<Map<String, dynamic>> dischargePatient({
+    required String patientId,
+    required String admissionId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('http://192.168.0.103:3000/doctors/dischargePatient'),
+      body: json.encode({
+        'patientId': patientId,
+        'admissionId': admissionId,
+      }),
+    );
+    return json.decode(response.body);
+  }
 }

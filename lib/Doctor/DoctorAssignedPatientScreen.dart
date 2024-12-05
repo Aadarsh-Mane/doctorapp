@@ -1,9 +1,23 @@
+import 'dart:convert';
+
+import 'package:doctorapp/Check.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Doctor/DoctorPatientDetailScreen.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+
+final assignedPatientsProvider =
+    StateNotifierProvider<AssignedPatientsNotifier, AsyncValue<List<Patient1>>>(
+  (ref) {
+    final authRepository = ref.read(authRepositoryProvider);
+    final notifier = AssignedPatientsNotifier(authRepository);
+    notifier.fetchAssignedPatients(); // Fetch data on initialization
+    return notifier;
+  },
+);
 
 class AssignedPatientsScreen extends ConsumerWidget {
   const AssignedPatientsScreen({Key? key}) : super(key: key);
@@ -11,14 +25,22 @@ class AssignedPatientsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assignedPatients = ref.watch(assignedPatientsProvider);
-
-    final authRepository = ref.read(authRepositoryProvider);
+    ref.refresh(assignedPatientsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Assigned Patients'),
         actions: [
-          // IconButton to navigate to AssignedLabsScreen
+          // Refresh button to manually refresh patient data
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              ref
+                  .refresh(assignedPatientsProvider.notifier)
+                  .fetchAssignedPatients();
+            },
+          ),
+          // Navigate to AssignedLabsScreen
           IconButton(
             icon: const Icon(Icons.assignment),
             onPressed: () {
@@ -37,58 +59,48 @@ class AssignedPatientsScreen extends ConsumerWidget {
           itemCount: patients.length,
           itemBuilder: (context, index) {
             final patient = patients[index];
-            return ListTile(
-              title: Text(patient.name),
-              subtitle: Text('Age: ${patient.age}, Gender: ${patient.gender}'),
-              trailing: IconButton(
-                icon: const Icon(Icons.label),
-                onPressed: () async {
-                  // Select Admission ID first
-                  final admissionId = await showDialog<String>(
-                    context: context,
-                    builder: (context) => SelectAdmissionDialog(
-                      admissionRecords: patient.admissionRecords,
+
+            return Dismissible(
+              key: Key(patient.id), // Unique key for each item
+              direction:
+                  DismissDirection.endToStart, // Swipe from right to left
+              onDismissed: (direction) async {
+                bool? shouldDischarge =
+                    await _showDischargeConfirmationDialog(context);
+
+                if (shouldDischarge == true) {
+                  await _dischargePatient(patient, ref);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Patient not discharged')),
+                  );
+                }
+              },
+              background: Container(
+                color: Colors.red,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                child: const Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                ),
+              ),
+              child: ListTile(
+                title: Text(patient.name),
+                subtitle:
+                    Text('Age: ${patient.age}, Gender: ${patient.gender}'),
+                onTap: () {
+                  // Navigate to patient details
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PatientDetailScreen4(
+                        patient: patient,
+                      ),
                     ),
                   );
-
-                  if (admissionId != null) {
-                    // Collect Lab Test Name
-                    final labTestNameGivenByDoctor = await showDialog<String>(
-                      context: context,
-                      builder: (context) => AssignLabDialog(),
-                    );
-
-                    if (labTestNameGivenByDoctor != null &&
-                        labTestNameGivenByDoctor.isNotEmpty) {
-                      // Call API to assign patient to lab
-                      final result = await authRepository.assignPatientToLab(
-                        patientId: patient.id,
-                        admissionId: admissionId,
-                        labTestNameGivenByDoctor: labTestNameGivenByDoctor,
-                      );
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(result['message']),
-                          backgroundColor:
-                              result['success'] ? Colors.green : Colors.red,
-                        ),
-                      );
-                    }
-                  }
                 },
               ),
-              onTap: () {
-                // Navigate to patient details
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PatientDetailScreen4(
-                      patient: patient,
-                    ),
-                  ),
-                );
-              },
             );
           },
         ),
@@ -98,6 +110,54 @@ class AssignedPatientsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<bool?> _showDischargeConfirmationDialog(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Discharge'),
+          content:
+              const Text('Are you sure you want to discharge this patient?'),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(false), // Discharge canceled
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(true), // Confirm discharge
+              child: const Text('Discharge'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _dischargePatient(Patient1 patient, WidgetRef ref) async {
+    try {
+      final admissionId = patient.admissionRecords.isNotEmpty
+          ? patient.admissionRecords.first.id
+          : ''; // Use the first admission record's ID
+
+      final authRepository = ref.read(authRepositoryProvider);
+      final result = await authRepository.dischargePatient(
+        patientId: patient.patientId,
+        admissionId: admissionId,
+      );
+
+      if (result['success']) {
+        print(result);
+        ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+      } else {
+        print("");
+      }
+    } catch (e) {
+      print('Error discharging patient: $e');
+    }
   }
 }
 
