@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:doctorapp/models/getDoctorProfile.dart';
 import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
+import 'package:doctorapp/models/getNurseProfile.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -170,6 +171,34 @@ class AuthRepository {
       }
     } catch (e) {
       print("Error fetching doctorProfile: $e");
+      rethrow;
+    }
+  }
+
+  Future<NurseProfile> fetchNurseProfile() async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('Token not found in SharedPreferences');
+    }
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.0.103:3000/nurse/nurseProfile'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("Fetch nurse profile response status code: ${response.statusCode}");
+      print("Fetch nurse profile response body: ${response.body}");
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return NurseProfile.fromJson(
+            data['nurseProfile']); // Parse single object
+      } else {
+        throw Exception(
+            'Failed to fetch nurseProfile. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error fetching nurseProfile: $e");
       rethrow;
     }
   }

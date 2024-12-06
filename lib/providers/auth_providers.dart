@@ -1,5 +1,6 @@
 import 'package:doctorapp/models/getDoctorProfile.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
+import 'package:doctorapp/models/getNurseProfile.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
 import 'package:doctorapp/stateprovider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -94,6 +95,10 @@ final authControllerProvider = StateNotifierProvider<AuthController, bool>(
 final fetchDoctorProfile = FutureProvider<DoctorProfile>((ref) async {
   final authRepository = ref.read(authRepositoryProvider);
   return await authRepository.fetchDoctorProfile();
+});
+final fetchNurseProfile = FutureProvider<NurseProfile>((ref) async {
+  final authRepository = ref.read(authRepositoryProvider);
+  return await authRepository.fetchNurseProfile();
 });
 // final assignedPatientsProvider = FutureProvider<List<Patient1>>((ref) async {
 //   final repository = ref.read(authRepositoryProvider);
