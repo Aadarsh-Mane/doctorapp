@@ -1,7 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
+import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:animations/animations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class NurseMainScreen extends StatefulWidget {
   @override
@@ -11,13 +16,11 @@ class NurseMainScreen extends StatefulWidget {
 class _NurseMainScreenState extends State<NurseMainScreen> {
   int _selectedIndex = 0;
 
-  // Screens for the bottom navigation bar (3 screens)
-  static List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(), // HomeScreen containing the banner slider
-    PatientListScreen(), // PatientListScreen containing a carousel slider
+  static final List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
+    PatientListScreen(),
+    AssignedLabsScreen(),
     LogoutScreen(),
-    // const Center(child: Text("Schedule Screen")),
-    // const Center(child: Text("Patient Info Screen")),
   ];
 
   void _onItemTapped(int index) {
@@ -29,10 +32,14 @@ class _NurseMainScreenState extends State<NurseMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Nurse's Dashboard")),
-      drawer: NurseDrawer(), // Custom drawer for better organization
-      body: _widgetOptions.elementAt(_selectedIndex),
-      bottomNavigationBar: NurseBottomNavBar(
+      appBar: AppBar(
+        title: const Text("Nurse's Dashboard"),
+      ),
+      drawer: const NurseDrawer(),
+      body: SafeArea(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: DoctorBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       ),
@@ -41,36 +48,83 @@ class _NurseMainScreenState extends State<NurseMainScreen> {
 }
 
 class NurseDrawer extends StatelessWidget {
+  const NurseDrawer({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
+      backgroundColor: Colors.white,
+      child: Column(
+        children: [
           DrawerHeader(
-            child: Text('Nurse Menu', style: TextStyle(color: Colors.white)),
-            decoration: BoxDecoration(color: Colors.blue),
+            decoration: const BoxDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    radius: 40,
+                    backgroundImage: AssetImage(
+                        'assets/images/sk.png'), // Adjusted image size
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  "Powered By\n20's Developers",
+                  style: TextStyle(color: Colors.black, fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            title: Text('Settings'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => PatientListScreen()),
-              );
-            },
-          ),
-          ListTile(
-            title: Text('Notifications'),
-            onTap: () {
-              // Handle Notifications navigation
-            },
-          ),
-          ListTile(
-            title: Text('Reports'),
-            onTap: () {
-              // Handle Reports navigation
-            },
+          Expanded(
+            child: ListView(
+              children: [
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.assignment_turned_in_sharp),
+                    title: const Text('Attendance'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => PatientListScreen(),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.assignment_turned_in_sharp),
+                    title: const Text('Assigned Labs'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) =>
+                      AssignedLabsScreen(),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.notifications),
+                    title: const Text('Notifications'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => const Scaffold(
+                    body: Center(child: Text('Notifications Screen')),
+                  ),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.report),
+                    title: const Text('Reports'),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => const Scaffold(
+                    body: Center(child: Text('Reports Screen')),
+                  ),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -78,39 +132,38 @@ class NurseDrawer extends StatelessWidget {
   }
 }
 
-class NurseBottomNavBar extends StatelessWidget {
+class DoctorBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemTapped;
 
-  const NurseBottomNavBar(
-      {Key? key, required this.selectedIndex, required this.onItemTapped})
-      : super(key: key);
+  const DoctorBottomNavBar({
+    Key? key,
+    required this.selectedIndex,
+    required this.onItemTapped,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: selectedIndex,
-      onTap: onItemTapped,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: 'PatienList',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.logout),
-          label: 'Logout',
-        ),
+    return CurvedNavigationBar(
+      index: selectedIndex,
+      height: 60.0,
+      items: const <Widget>[
+        Icon(Icons.home, size: 30, color: Colors.white),
+        Icon(Icons.assignment_ind_outlined, size: 30, color: Colors.white),
+        Icon(Icons.local_bar_sharp, size: 30, color: Colors.white),
+        Icon(Icons.logout, size: 30, color: Colors.white),
       ],
+      color: Colors.blue,
+      buttonBackgroundColor: Colors.black,
+      backgroundColor: Colors.grey.shade100,
+      animationCurve: Curves.easeInOut,
+      animationDuration: const Duration(milliseconds: 300),
+      onTap: onItemTapped,
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  // List of images for the carousel
+class HomeScreen extends ConsumerWidget {
   final List<String> imgList = [
     'assets/images/span.png',
     'assets/images/spandd.png',
@@ -118,25 +171,28 @@ class HomeScreen extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final doctorProfile = ref.watch(fetchDoctorProfile);
+
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Banner Slider
           CarouselSlider(
             options: CarouselOptions(
               autoPlay: true,
               enlargeCenterPage: true,
               aspectRatio: 2.0,
               viewportFraction: 0.8,
-              autoPlayInterval: Duration(seconds: 3),
+              autoPlayInterval: const Duration(seconds: 3),
             ),
             items: imgList.map((item) {
               return Container(
-                margin: EdgeInsets.symmetric(horizontal: 5.0),
+                margin: const EdgeInsets.symmetric(horizontal: 6.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+                  boxShadow: const [
+                    BoxShadow(color: Colors.grey, blurRadius: 5.0)
+                  ],
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
@@ -149,10 +205,56 @@ class HomeScreen extends StatelessWidget {
               );
             }).toList(),
           ),
-          // Additional Content
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text('Welcome to the Nurse\'s Dashboard'),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Welcome to the Spandan Hospital\ ',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          doctorProfile.when(
+            data: (profile) => Card(
+              elevation: 8,
+              margin: const EdgeInsets.all(16.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundImage: AssetImage('assets/images/doctor1.png'),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Welcome Doctor : ${profile.doctorName}",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "Email : ${profile.email}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors
+                                .black, // Changed to black for readability
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            loading: () => const CircularProgressIndicator(),
+            error: (error, stackTrace) => Text('Error: $error'),
           ),
         ],
       ),
