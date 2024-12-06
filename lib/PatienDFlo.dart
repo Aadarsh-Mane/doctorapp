@@ -4,12 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter/material.dart';
-import 'package:doctorapp/models/getNewPatientModel.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
-
 class PatientDetailScreen2 extends StatefulWidget {
   final Patient1 patient;
 
@@ -56,29 +50,26 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          title: const Text('Add Follow-Up'),
+          title: Text('Add Follow-Up'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: notesController,
-                decoration: const InputDecoration(labelText: 'Notes'),
+                decoration: InputDecoration(labelText: 'Notes'),
               ),
               TextField(
                 controller: observationsController,
-                decoration: const InputDecoration(labelText: 'Observations'),
+                decoration: InputDecoration(labelText: 'Observations'),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () async {
                 final body = {
                   "patientId": patientId,
@@ -101,13 +92,12 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
 
                   if (response.statusCode == 201) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Follow-up added successfully!')),
+                      SnackBar(content: Text('Follow-up added successfully!')),
                     );
                     setState(() {}); // Refresh UI
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to add follow-up!')),
+                      SnackBar(content: Text('Failed to add follow-up!')),
                     );
                   }
                 } catch (e) {
@@ -117,7 +107,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                 }
                 Navigator.pop(context);
               },
-              child: const Text('Submit'),
+              child: Text('Submit'),
             ),
           ],
         );
@@ -130,53 +120,28 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.patient.name} Details'),
-        backgroundColor: Colors.teal,
-        elevation: 5,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
           children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              elevation: 8,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Name: ${widget.patient.name}',
-                        style: const TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    Text('Patient ID: ${widget.patient.patientId}',
-                        style: const TextStyle(fontSize: 16)),
-                    Text('Age: ${widget.patient.age}',
-                        style: const TextStyle(fontSize: 16)),
-                    Text('Gender: ${widget.patient.gender}',
-                        style: const TextStyle(fontSize: 16)),
-                    Text('Contact: ${widget.patient.contact}',
-                        style: const TextStyle(fontSize: 16)),
-                    Text('Address: ${widget.patient.address}',
-                        style: const TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text('Admission Records:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            Text('Name: ${widget.patient.name}',
+                style: TextStyle(fontSize: 18)),
+            Text('Patient ID: ${widget.patient.patientId}',
+                style: TextStyle(fontSize: 18)),
+            Text('Age: ${widget.patient.age}', style: TextStyle(fontSize: 18)),
+            Text('Gender: ${widget.patient.gender}',
+                style: TextStyle(fontSize: 18)),
+            Text('Contact: ${widget.patient.contact}',
+                style: TextStyle(fontSize: 18)),
+            Text('Address: ${widget.patient.address}',
+                style: TextStyle(fontSize: 18)),
+            SizedBox(height: 16),
+            Text('Admission Records:',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             ...widget.patient.admissionRecords.map((record) {
               return Card(
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                elevation: 6,
                 child: ExpansionTile(
                   title: Text('Reason: ${record.reasonForAdmission}'),
                   subtitle: Text('Date: ${record.admissionDate}'),
@@ -188,13 +153,13 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                         children: [
                           Text('Symptoms: ${record.symptoms}'),
                           Text('Initial Diagnosis: ${record.initialDiagnosis}'),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           FutureBuilder<List<FollowUp>>(
                             future: _fetchFollowUps(record.id),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const Center(
+                                return Center(
                                     child: CircularProgressIndicator());
                               }
                               if (snapshot.hasError) {
@@ -202,7 +167,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               }
                               final followUps = snapshot.data ?? [];
                               if (followUps.isEmpty) {
-                                return const Text('No follow-ups available.',
+                                return Text('No follow-ups available.',
                                     style: TextStyle(fontSize: 14));
                               }
                               return Column(
@@ -215,16 +180,13 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text('Date: ${followUp.date}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
+                                            style: TextStyle(fontSize: 14)),
                                         Text('Notes: ${followUp.notes}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
+                                            style: TextStyle(fontSize: 14)),
                                         Text(
                                             'Observations: ${followUp.observations}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
-                                        const Divider(),
+                                            style: TextStyle(fontSize: 14)),
+                                        Divider(),
                                       ],
                                     ),
                                   );
@@ -232,17 +194,11 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               );
                             },
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                            ),
                             onPressed: () => _addFollowUp(
                                 widget.patient.patientId, record.id),
-                            child: const Text('Add Follow-Up'),
+                            child: Text('Add Follow-Up'),
                           ),
                         ],
                       ),
@@ -251,18 +207,6 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                 ),
               );
             }).toList(),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-              ),
-              onPressed: () => _addFollowUp(widget.patient.patientId,
-                  widget.patient.admissionRecords.first.id),
-              child: const Text('Add Initial Follow-Up'),
-            ),
           ],
         ),
       ),

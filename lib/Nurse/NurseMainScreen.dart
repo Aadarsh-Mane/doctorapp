@@ -94,11 +94,10 @@ class NurseDrawer extends StatelessWidget {
                 OpenContainer(
                   closedBuilder: (context, openContainer) => ListTile(
                     leading: const Icon(Icons.assignment_turned_in_sharp),
-                    title: const Text('Assigned Labs'),
+                    title: const Text('All Patients'),
                     onTap: openContainer,
                   ),
-                  openBuilder: (context, closeContainer) =>
-                      AssignedLabsScreen(),
+                  openBuilder: (context, closeContainer) => PatientListScreen(),
                   transitionDuration: const Duration(milliseconds: 500),
                 ),
                 OpenContainer(
@@ -172,7 +171,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final doctorProfile = ref.watch(fetchDoctorProfile);
+    final nurseProfile = ref.watch(fetchNurseProfile);
 
     return SingleChildScrollView(
       child: Column(
@@ -212,7 +211,7 @@ class HomeScreen extends ConsumerWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          doctorProfile.when(
+          nurseProfile.when(
             data: (profile) => Card(
               elevation: 8,
               margin: const EdgeInsets.all(16.0),
@@ -233,7 +232,7 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Welcome Doctor : ${profile.doctorName}",
+                          "Welcome Nurse : ${profile.nurseName}",
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
