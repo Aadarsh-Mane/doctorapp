@@ -1,13 +1,13 @@
 // lib/models/NurseProfile.dart
 class NurseProfile {
   final String id;
-  final String doctorName;
+  final String nurseName;
   final String usertype;
   final String email;
 
   NurseProfile({
     required this.id,
-    required this.doctorName,
+    required this.nurseName,
     required this.usertype,
     required this.email,
   });
@@ -16,7 +16,7 @@ class NurseProfile {
   factory NurseProfile.fromJson(Map<String, dynamic> json) {
     return NurseProfile(
       id: json['_id'],
-      doctorName: json['doctorName'],
+      nurseName: json['nurseName'],
       usertype: json['usertype'],
       email: json['email'],
     );
