@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
+import 'package:doctorapp/Nurse/AttendanceScreen.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
@@ -19,7 +20,8 @@ class _NurseMainScreenState extends State<NurseMainScreen> {
   static final List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     PatientListScreen(),
-    AssignedLabsScreen(),
+    AttendanceScreen(),
+    // AssignedLabsScreen(),
     LogoutScreen(),
   ];
 
@@ -88,7 +90,7 @@ class NurseDrawer extends StatelessWidget {
                     title: const Text('Attendance'),
                     onTap: openContainer,
                   ),
-                  openBuilder: (context, closeContainer) => PatientListScreen(),
+                  openBuilder: (context, closeContainer) => AttendanceScreen(),
                   transitionDuration: const Duration(milliseconds: 500),
                 ),
                 OpenContainer(
