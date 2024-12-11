@@ -29,17 +29,46 @@ class PatientDetailScreen4 extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
+            // Header for Patient Details
             Text(
               'Patient Details',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal.shade700,
+              ),
             ),
             const SizedBox(height: 10),
-            Text('Name: ${patient.name}'),
-            Text('Age: ${patient.age}'),
-            Text('Gender: ${patient.gender}'),
-            Text('Contact: ${patient.contact}'),
-            Text('Address: ${patient.address}'),
+
+            // Patient Details Card with Animated Effect
+            AnimatedOpacity(
+              opacity: 1.0,
+              duration: const Duration(seconds: 1),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 8,
+                shadowColor: Colors.black.withOpacity(0.3),
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPatientDetail('Name: ', patient.name),
+                      _buildPatientDetail('Age: ', patient.age.toString()),
+                      _buildPatientDetail('Gender: ', patient.gender),
+                      _buildPatientDetail('Contact: ', patient.contact),
+                      _buildPatientDetail('Address: ', patient.address),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
+
+            // Admission Records Section
             Text(
               'Admission Records (${patient.admissionRecords.length})',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -91,6 +120,18 @@ class PatientDetailScreen4 extends StatelessWidget {
     );
   }
 
+  // Helper Method to Create Patient Details Section
+  Widget _buildPatientDetail(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Text(
+        '$label$value',
+        style: TextStyle(fontSize: 16, color: Colors.teal.shade800),
+      ),
+    );
+  }
+
+  // Helper Method to Build Follow-Up Table
   Widget _buildFollowUpTable(FollowUp followUp) {
     return Card(
       shape: RoundedRectangleBorder(
@@ -135,8 +176,7 @@ class PatientDetailScreen4 extends StatelessWidget {
                   DataRow(
                     color: MaterialStateProperty.resolveWith<Color>(
                       (Set<MaterialState> states) {
-                        return Colors.lightBlueAccent
-                            .withOpacity(0.2); // Light blue row color
+                        return Colors.lightBlueAccent.withOpacity(0.2);
                       },
                     ),
                     cells: [
@@ -166,6 +206,7 @@ class PatientDetailScreen4 extends StatelessWidget {
     );
   }
 
+  // Helper Method to Build Table Row for Follow-Ups
   DataRow _buildTableRow(String label, String value) {
     return DataRow(
       cells: [
