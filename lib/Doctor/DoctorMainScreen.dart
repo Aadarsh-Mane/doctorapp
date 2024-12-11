@@ -1,9 +1,11 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
+import 'package:doctorapp/Doctor/DoctorListScreen.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
+import 'package:doctorapp/service/NotificationService.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:animations/animations.dart';
@@ -28,6 +30,14 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  // final notificationService = NotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+    // notificationService.initializeFCM();
   }
 
   @override
@@ -104,6 +114,15 @@ class DoctorDrawer extends StatelessWidget {
                 ),
                 OpenContainer(
                   closedBuilder: (context, openContainer) => ListTile(
+                    leading: const Icon(Icons.assignment_turned_in_sharp),
+                    title: const Text('Doctors '),
+                    onTap: openContainer,
+                  ),
+                  openBuilder: (context, closeContainer) => DoctorListScreen(),
+                  transitionDuration: const Duration(milliseconds: 500),
+                ),
+                OpenContainer(
+                  closedBuilder: (context, openContainer) => ListTile(
                     leading: const Icon(Icons.notifications),
                     title: const Text('Notifications'),
                     onTap: openContainer,
@@ -163,8 +182,14 @@ class DoctorBottomNavBar extends StatelessWidget {
     );
   }
 }
+// Adjust the import path
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> imgList = [
     'assets/images/span.png',
     'assets/images/spandd.png',
@@ -172,8 +197,17 @@ class HomeScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final doctorProfile = ref.watch(fetchDoctorProfile);
+  void initState() {
+    super.initState();
+    // Trigger the fetch when the screen is first loaded
+    Future.microtask(() {
+      ref.read(doctorProfileProvider.notifier).getDoctorProfile();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final doctorProfile = ref.watch(doctorProfileProvider);
 
     return SingleChildScrollView(
       child: Column(
@@ -209,54 +243,55 @@ class HomeScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Welcome to the Spandan Hospital\ ',
+              'Welcome to the Spandan Hospital',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          doctorProfile.when(
-            data: (profile) => Card(
-              elevation: 8,
-              margin: const EdgeInsets.all(16.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: AssetImage('assets/images/doctor1.png'),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Welcome Doctor : ${profile.doctorName}",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+          // Check if doctorProfile is null or not
+          doctorProfile == null
+              ? const CircularProgressIndicator() // Show loading while fetching
+              : doctorProfile != null
+                  ? Card(
+                      elevation: 8,
+                      margin: const EdgeInsets.all(16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage:
+                                  AssetImage('assets/images/doctor1.png'),
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Welcome Doctor : ${doctorProfile!.doctorName}",
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "Email : ${doctorProfile.email}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        Text(
-                          "Email : ${profile.email}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors
-                                .black, // Changed to black for readability
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            loading: () => const CircularProgressIndicator(),
-            error: (error, stackTrace) => Text('Error: $error'),
-          ),
+                      ),
+                    )
+                  : const CircularProgressIndicator(),
         ],
       ),
     );

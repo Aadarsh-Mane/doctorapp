@@ -1,3 +1,4 @@
+import 'package:doctorapp/constants/Urls.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -20,7 +21,7 @@ class _FollowUpFormState extends State<FollowUpForm> {
 
   Future<void> addFollowUp() async {
     final response = await http.post(
-      Uri.parse('http://http://192.168.0.103:3000/nurse/addFollowUp'),
+      Uri.parse('http://${VERCEL_URL}/nurse/addFollowUp'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

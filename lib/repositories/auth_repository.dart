@@ -1,5 +1,6 @@
 // lib/repositories/auth_repository.dart
 import 'dart:convert';
+import 'package:doctorapp/constants/Urls.dart';
 import 'package:doctorapp/models/getDoctorProfile.dart';
 import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
@@ -12,7 +13,7 @@ class AuthRepository {
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.103:3000/users/signin'),
+        Uri.parse('${VERCEL_URL}/users/signin'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -47,8 +48,7 @@ class AuthRepository {
   Future<String?> loginNurse(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse(
-            'http://192.168.0.103:3000/nurse/signin'), // Different URL for nurse
+        Uri.parse('${VERCEL_URL}/nurse/signin'), // Different URL for nurse
         headers: {
           'Content-Type': 'application/json',
         },
@@ -124,7 +124,7 @@ class AuthRepository {
 
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.103:3000/doctors/getAssignedPatients'),
+        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -147,13 +147,14 @@ class AuthRepository {
   }
 
   Future<DoctorProfile> fetchDoctorProfile() async {
+    print("heelo");
     final token = await getToken();
     if (token == null) {
       throw Exception('Token not found in SharedPreferences');
     }
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.103:3000/doctors/getDoctorProfile'),
+        Uri.parse('${VERCEL_URL}/doctors/getDoctorProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -182,7 +183,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.0.103:3000/nurse/nurseProfile'),
+        Uri.parse('${VERCEL_URL}/nurse/nurseProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -211,8 +212,9 @@ class AuthRepository {
 
   Future<List<Patient1>> fetchPatients() async {
     try {
-      final response = await http
-          .get(Uri.parse('http://192.168.0.103:3000/reception/listPatients'));
+      final response =
+          await http.get(Uri.parse('${VERCEL_URL}/reception/listPatients'));
+      print(response.body);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -239,7 +241,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('http://192.168.0.103:3000/doctors/getAssignedPatients'),
+        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -267,7 +269,7 @@ class AuthRepository {
     required String labTestNameGivenByDoctor,
   }) async {
     final token = await getToken(); // Retrieve the token from storage
-    final url = Uri.parse('http://192.168.0.103:3000/doctors/assignPatient');
+    final url = Uri.parse('${VERCEL_URL}/doctors/assignPatient');
 
     try {
       final response = await http.post(
@@ -310,7 +312,7 @@ class AuthRepository {
       throw Exception('Token not found in SharedPreferences');
     }
     final response = await http.get(
-      Uri.parse('http://192.168.0.103:3000/doctors/getDoctorAssignedPatient'),
+      Uri.parse('${VERCEL_URL}/doctors/getDoctorAssignedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -330,12 +332,33 @@ class AuthRepository {
     required String admissionId,
   }) async {
     final response = await http.post(
-      Uri.parse('http://192.168.0.103:3000/doctors/dischargePatient'),
+      Uri.parse('${VERCEL_URL}/doctors/dischargePatient'),
       body: json.encode({
         'patientId': patientId,
         'admissionId': admissionId,
       }),
     );
     return json.decode(response.body);
+  }
+
+  Future<void> storeTokenToBackend(String fcmToken) async {
+    final token = await getToken(); // Retrieve the token from storage
+
+    final response = await http.post(
+      Uri.parse('${VERCEL_URL}/storeFcmToken'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'fcmToken': fcmToken,
+      }),
+    );
+    print(response.body);
+    if (response.statusCode == 200) {
+      print('Token stored successfully');
+    } else {
+      print('Failed to store token: ${response.body}');
+    }
   }
 }

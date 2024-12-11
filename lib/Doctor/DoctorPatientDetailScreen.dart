@@ -1,5 +1,6 @@
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class PatientDetailScreen4 extends StatelessWidget {
   final Patient1 patient;
@@ -9,6 +10,17 @@ class PatientDetailScreen4 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dateFormat = DateFormat('d/M/yyyy, HH:mm:ss');
+
+    // Sort follow-ups by date, newest first
+    patient.admissionRecords.forEach((record) {
+      record.followUps.sort((a, b) {
+        final dateA = dateFormat.parse(a.date);
+        final dateB = dateFormat.parse(b.date);
+        return dateB.compareTo(dateA); // Newest first
+      });
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: Text(patient.name),
@@ -64,17 +76,8 @@ class PatientDetailScreen4 extends StatelessWidget {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       if (record.followUps.isNotEmpty)
-                        ...record.followUps.map(
-                          (followUp) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('• Date: ${followUp.date}'),
-                              Text('  Notes: ${followUp.notes}'),
-                              Text('  Observations: ${followUp.observations}'),
-                              Text('  Nurse ID: ${followUp.nurseId}'),
-                            ],
-                          ),
-                        )
+                        ...record.followUps
+                            .map((followUp) => _buildFollowUpTable(followUp))
                       else
                         Text('No follow-ups available'),
                     ],
@@ -85,6 +88,95 @@ class PatientDetailScreen4 extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFollowUpTable(FollowUp followUp) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Follow-Up Details',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 500),
+              child: DataTable(
+                columnSpacing: 20,
+                dataRowHeight: 60,
+                headingRowHeight: 40,
+                border: TableBorder.all(color: Colors.grey.shade300),
+                headingRowColor:
+                    MaterialStateProperty.all(Colors.teal.shade100),
+                columns: const [
+                  DataColumn(
+                    label: Text('Label', style: TextStyle(fontSize: 14)),
+                  ),
+                  DataColumn(
+                    label: Text('Value', style: TextStyle(fontSize: 14)),
+                  ),
+                ],
+                rows: [
+                  _buildTableRow('Date', followUp.date),
+                  _buildTableRow(
+                      'Temperature', followUp.temperature.toString()),
+                  _buildTableRow('Pulse', followUp.pulse.toString()),
+                  _buildTableRow(
+                      'Respiration Rate', followUp.respirationRate.toString()),
+                  DataRow(
+                    color: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        return Colors.lightBlueAccent
+                            .withOpacity(0.2); // Light blue row color
+                      },
+                    ),
+                    cells: [
+                      DataCell(Text(
+                        '4-Hour Follow-Up',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.deepPurple,
+                            fontStyle: FontStyle.italic),
+                      )),
+                      DataCell(Text('')),
+                    ],
+                  ),
+                  _buildTableRow(
+                      '4-Hr Temperature', followUp.fourhrTemperature),
+                  _buildTableRow(
+                      'Blood Pressure', followUp.fourhrbloodPressure),
+                  _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  DataRow _buildTableRow(String label, String value) {
+    return DataRow(
+      cells: [
+        DataCell(Text(label,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold))),
+        DataCell(AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(value,
+              key: ValueKey(value), style: const TextStyle(fontSize: 14)),
+        )),
+      ],
     );
   }
 }

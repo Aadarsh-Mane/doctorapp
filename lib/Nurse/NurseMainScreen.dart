@@ -164,7 +164,12 @@ class DoctorBottomNavBar extends StatelessWidget {
   }
 }
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> imgList = [
     'assets/images/span.png',
     'assets/images/spandd.png',
@@ -172,8 +177,17 @@ class HomeScreen extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final nurseProfile = ref.watch(fetchNurseProfile);
+  void initState() {
+    super.initState();
+    // Trigger the fetch when the screen is first loaded
+    Future.microtask(() {
+      ref.read(nurseProfileProvider.notifier).getNurseProfile();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nurseProfile = ref.watch(nurseProfileProvider);
 
     return SingleChildScrollView(
       child: Column(
@@ -209,54 +223,55 @@ class HomeScreen extends ConsumerWidget {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Welcome to the Spandan Hospital\ ',
+              'Welcome to the Spandan Hospital',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          nurseProfile.when(
-            data: (profile) => Card(
-              elevation: 8,
-              margin: const EdgeInsets.all(16.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundImage: AssetImage('assets/images/doctor1.png'),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Welcome Nurse : ${profile.nurseName}",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+          // Check if doctorProfile is null or not
+          nurseProfile == null
+              ? const CircularProgressIndicator() // Show loading while fetching
+              : nurseProfile != null
+                  ? Card(
+                      elevation: 8,
+                      margin: const EdgeInsets.all(16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundImage:
+                                  AssetImage('assets/images/doctor1.png'),
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Welcome Nurse : ${nurseProfile!.nurseName}",
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  "Email : ${nurseProfile.email}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        Text(
-                          "Email : ${profile.email}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors
-                                .black, // Changed to black for readability
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            loading: () => const CircularProgressIndicator(),
-            error: (error, stackTrace) => Text('Error: $error'),
-          ),
+                      ),
+                    )
+                  : const CircularProgressIndicator(),
         ],
       ),
     );

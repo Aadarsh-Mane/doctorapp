@@ -1,8 +1,9 @@
+import 'package:doctorapp/Provider.dart';
+import 'package:doctorapp/StateProvider.dart';
 import 'package:doctorapp/models/getDoctorProfile.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/models/getNurseProfile.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
-import 'package:doctorapp/stateprovider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository());
@@ -92,14 +93,26 @@ final authControllerProvider = StateNotifierProvider<AuthController, bool>(
   (ref) => AuthController(ref),
 );
 
-final fetchDoctorProfile = FutureProvider<DoctorProfile>((ref) async {
-  final authRepository = ref.read(authRepositoryProvider);
-  return await authRepository.fetchDoctorProfile();
+// final fetchDoctorProfile = FutureProvider<DoctorProfile>((ref) async {
+//   final authRepository = ref.read(authRepositoryProvider);
+//   return await authRepository.fetchDoctorProfile();
+// });
+final doctorProfileProvider =
+    StateNotifierProvider<DoctorProfileNotifier, DoctorProfile?>((ref) {
+  final authRepository = ref.read(
+      authRepositoryProvider); // Assuming you have a provider for AuthRepository
+  return DoctorProfileNotifier(authRepository);
 });
-final fetchNurseProfile = FutureProvider<NurseProfile>((ref) async {
-  final authRepository = ref.read(authRepositoryProvider);
-  return await authRepository.fetchNurseProfile();
+final nurseProfileProvider =
+    StateNotifierProvider<NurseProfileNotifier, NurseProfile?>((ref) {
+  final authRepository = ref.read(
+      authRepositoryProvider); // Assuming you have a provider for AuthRepository
+  return NurseProfileNotifier(authRepository);
 });
+// final fetchNurseProfile = FutureProvider<NurseProfile>((ref) async {
+//   final authRepository = ref.read(authRepositoryProvider);
+//   return await authRepository.fetchNurseProfile();
+// });
 // final assignedPatientsProvider = FutureProvider<List<Patient1>>((ref) async {
 //   final repository = ref.read(authRepositoryProvider);
 //   return await repository.getAssignedPatients();

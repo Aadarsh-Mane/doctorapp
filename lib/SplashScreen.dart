@@ -10,16 +10,46 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  double _opacityHospital = 0.0;
+  double _opacityLogo = 0.0;
+  double _opacityPoweredBy = 0.0;
+  double _opacityCompanyLogo = 0.0;
+
   @override
   void initState() {
     super.initState();
+    _animateSplash();
+  }
+
+  // Sequential fade-in animation for each widget
+  _animateSplash() async {
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _opacityHospital = 1.0;
+    });
+
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _opacityLogo = 1.0;
+    });
+
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _opacityPoweredBy = 1.0;
+    });
+
+    await Future.delayed(Duration(seconds: 1));
+    setState(() {
+      _opacityCompanyLogo = 1.0;
+    });
+
+    // After the animation, navigate to the next screen
+    await Future.delayed(Duration(seconds: 2)); // Wait a bit before navigating
     _navigateToNextScreen();
   }
 
-  // Navigate to the next screen after a delay
+  // Navigate to the next screen after the splash
   _navigateToNextScreen() async {
-    await Future.delayed(
-        Duration(seconds: 3)); // Show splash screen for 3 seconds
     final token = await _getToken();
     final userType = await _getUserType();
 
@@ -57,34 +87,72 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/span.png',
-                height: 150), // Replace with your logo path
-            SizedBox(height: 20),
-            Text(
-              'Spandan Hospital',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+      body: Stack(
+        children: [
+          // Main content at the center
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedOpacity(
+                  opacity: _opacityHospital,
+                  duration: Duration(seconds: 1),
+                  child: Image.asset(
+                    'assets/images/spp.png', // Replace with your logo path
+                    height: 150,
+                  ),
+                ),
+                SizedBox(height: 50),
+                AnimatedOpacity(
+                  opacity: _opacityHospital,
+                  duration: Duration(seconds: 1),
+                  child: Text(
+                    'Spandan Hospital',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+              ],
+            ),
+          ),
+
+          // Footer at the bottom with "Powered by" and company logo
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0), // Adjust padding as needed
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedOpacity(
+                    opacity: _opacityPoweredBy,
+                    duration: Duration(seconds: 1),
+                    child: Text(
+                      'Powered by 20s Developers',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  AnimatedOpacity(
+                    opacity: _opacityCompanyLogo,
+                    duration: Duration(seconds: 1),
+                    child: Image.asset(
+                      'assets/images/ss.png', // Replace with your company logo
+                      height: 50,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              'Powered by 20s Developers',
-              style: TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 30),
-            Image.asset('assets/images/doctor1.png',
-                height: 50), // Replace with your company logo
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

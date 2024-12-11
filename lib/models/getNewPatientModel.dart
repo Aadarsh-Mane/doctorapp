@@ -4,6 +4,37 @@ class FollowUp {
   final String notes;
   final String observations;
   final String id;
+  final double temperature;
+  final int pulse;
+  final int respirationRate;
+  final String bloodPressure;
+  final int oxygenSaturation;
+  final int bloodSugarLevel;
+  final String otherVitals;
+  final String ivFluid;
+  final String nasogastric;
+  final String rtFeedOral;
+  final String totalIntake;
+  final String cvp;
+  final String urine;
+  final String stool;
+  final String rtAspirate;
+  final String otherOutput;
+  final String ventyMode;
+  final int setRate;
+  final double fiO2;
+  final int pip;
+  final String peepCpap;
+  final String ieRatio;
+  final String otherVentilator;
+  final String fourhrpulse;
+  final String fourhrbloodPressure;
+  final String fourhroxygenSaturation;
+  final String fourhrTemperature;
+  final String fourhrbloodSugarLevel;
+  final String fourhrotherVitals;
+  final String fourhrurine;
+  final String fourhrivFluid;
 
   FollowUp({
     required this.nurseId,
@@ -11,15 +42,88 @@ class FollowUp {
     required this.notes,
     required this.observations,
     required this.id,
+    required this.temperature,
+    required this.pulse,
+    required this.respirationRate,
+    required this.bloodPressure,
+    required this.oxygenSaturation,
+    required this.bloodSugarLevel,
+    required this.otherVitals,
+    required this.ivFluid,
+    required this.nasogastric,
+    required this.rtFeedOral,
+    required this.totalIntake,
+    required this.cvp,
+    required this.urine,
+    required this.stool,
+    required this.rtAspirate,
+    required this.otherOutput,
+    required this.ventyMode,
+    required this.setRate,
+    required this.fiO2,
+    required this.pip,
+    required this.peepCpap,
+    required this.ieRatio,
+    required this.otherVentilator,
+    required this.fourhrpulse,
+    required this.fourhrbloodPressure,
+    required this.fourhroxygenSaturation,
+    required this.fourhrTemperature,
+    required this.fourhrbloodSugarLevel,
+    required this.fourhrotherVitals,
+    required this.fourhrurine,
+    required this.fourhrivFluid,
   });
 
   factory FollowUp.fromJson(Map<String, dynamic> json) {
     return FollowUp(
-      nurseId: json['nurseId'],
-      date: json['date'],
-      notes: json['notes'],
-      observations: json['observations'],
-      id: json['_id'],
+      nurseId: json['nurseId'] ?? '', // Default to empty string if missing
+      date: json['date'] ?? '', // Default to empty string if missing
+      notes: json['notes'] ?? '', // Default to empty string if missing
+      observations:
+          json['observations'] ?? '', // Default to empty string if missing
+      id: json['_id'] ?? '', // Default to empty string if missing
+      temperature:
+          json['temperature']?.toDouble() ?? 0.0, // Default to 0.0 if null
+      pulse: json['pulse'] ?? 0, // Default to 0 if missing
+      respirationRate: json['respirationRate'] ?? 0, // Default to 0 if missing
+      bloodPressure:
+          json['bloodPressure'] ?? '', // Default to empty string if missing
+      oxygenSaturation:
+          json['oxygenSaturation'] ?? 0, // Default to 0 if missing
+      bloodSugarLevel: json['bloodSugarLevel'] ?? 0, // Default to 0 if missing
+      otherVitals:
+          json['otherVitals'] ?? '', // Default to empty string if missing
+      ivFluid: json['ivFluid'] ?? '', // Default to empty string if missing
+      nasogastric:
+          json['nasogastric'] ?? '', // Default to empty string if missing
+      rtFeedOral:
+          json['rtFeedOral'] ?? '', // Default to empty string if missing
+      totalIntake:
+          json['totalIntake'] ?? '', // Default to empty string if missing
+      cvp: json['cvp'] ?? '', // Default to empty string if missing
+      urine: json['urine'] ?? '', // Default to empty string if missing
+      stool: json['stool'] ?? '', // Default to empty string if missing
+      rtAspirate:
+          json['rtAspirate'] ?? '', // Default to empty string if missing
+      otherOutput:
+          json['otherOutput'] ?? '', // Default to empty string if missing
+      ventyMode: json['ventyMode'] ?? '', // Default to empty string if missing
+      setRate: json['setRate'] ?? 0, // Default to 0 if missing
+      fiO2: json['fiO2']?.toDouble() ?? 0.0, // Default to 0.0 if null
+      pip: json['pip'] ?? 0, // Default to 0 if missing
+      peepCpap: json['peepCpap'] ?? '', // Default to empty string if missing
+      ieRatio: json['ieRatio'] ?? '', // Default to empty string if missing
+      otherVentilator:
+          json['otherVentilator'] ?? '', // Default to empty string if missing
+      fourhrpulse: json['fourhrpulse'] ?? '',
+      fourhrbloodPressure: json['fourhrbloodPressure'] ?? '',
+      fourhroxygenSaturation: json['fourhroxygenSaturation'] ?? '',
+      fourhrTemperature: json['fourhrTemperature'] ?? '',
+      fourhrbloodSugarLevel: json['fourhrbloodSugarLevel'] ?? '',
+      fourhrotherVitals: json['fourhrotherVitals'] ?? '',
+      fourhrurine: json['fourhrurine'] ?? '',
+      fourhrivFluid: json['fourhrivFluid'] ?? '',
     );
   }
 }
