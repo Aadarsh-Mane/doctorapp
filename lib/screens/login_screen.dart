@@ -1,6 +1,7 @@
 import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
 import 'package:doctorapp/Nurse/NurseMainScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
+import 'package:doctorapp/screens/LogoutScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -67,32 +68,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 30),
-                // User type dropdown
-                DropdownButtonFormField<String>(
-                  value: selectedUsertype,
-                  decoration: InputDecoration(
-                    labelText: "Select User Type",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  items: ['doctor', 'nurse'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value[0].toUpperCase() +
-                            value.substring(1), // Capitalize
+                // User type dropdown with improved animations and style
+                AnimatedSwitcher(
+                  duration: Duration(milliseconds: 300),
+                  child: DropdownButtonFormField<String>(
+                    key: ValueKey<String>(selectedUsertype),
+                    value: selectedUsertype,
+                    decoration: InputDecoration(
+                      labelText: "Select User Type",
+                      labelStyle: TextStyle(color: Colors.teal.shade700),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedUsertype = newValue!;
-                    });
-                  },
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.teal),
+                    items: ['doctor', 'nurse'].map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value[0].toUpperCase() + value.substring(1),
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedUsertype = newValue!;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.teal,
+                    ),
+                    iconSize: 30,
+                  ),
                 ),
                 SizedBox(height: 20),
-                // Email field
+                // Email field with animation on focus
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -101,10 +114,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     prefixIcon: Icon(Icons.email),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.teal, width: 2),
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
-                // Password field
+                // Password field with focus effect
                 TextField(
                   controller: passwordController,
                   decoration: InputDecoration(
@@ -113,11 +130,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     prefixIcon: Icon(Icons.lock),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.teal, width: 2),
+                    ),
                   ),
                   obscureText: true,
                 ),
                 SizedBox(height: 30),
-                // Login button
+                // Login button with hover effect
                 ElevatedButton(
                   onPressed: () async {
                     try {
@@ -151,10 +172,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.teal.shade700,
                     padding: EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 8,
                   ),
                   child: Text(
                     "Login",
@@ -163,6 +187,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 SizedBox(height: 40),
                 // Footer with branding
+                ElevatedButton(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LogoutScreen(),
+                    ),
+                  ),
+                  child: Text('Lab login'),
+                ),
                 Column(
                   children: [
                     Text(
