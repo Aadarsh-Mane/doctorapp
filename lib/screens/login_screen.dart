@@ -1,4 +1,5 @@
 import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
+import 'package:doctorapp/Labs/LabScreen.dart';
 import 'package:doctorapp/Nurse/NurseMainScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:doctorapp/screens/LogoutScreen.dart';
@@ -68,41 +69,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 30),
-                // User type dropdown with improved animations and style
-                AnimatedSwitcher(
-                  duration: Duration(milliseconds: 300),
-                  child: DropdownButtonFormField<String>(
-                    key: ValueKey<String>(selectedUsertype),
-                    value: selectedUsertype,
-                    decoration: InputDecoration(
-                      labelText: "Select User Type",
-                      labelStyle: TextStyle(color: Colors.teal.shade700),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                // User type selection with radio buttons
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Select User Type",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.teal.shade700,
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16),
                     ),
-                    style: TextStyle(fontSize: 16, color: Colors.teal),
-                    items: ['doctor', 'nurse'].map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value[0].toUpperCase() + value.substring(1),
-                          style: TextStyle(color: Colors.black),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        AnimatedRadioButton(
+                          label: "Doctor",
+                          value: 'doctor',
+                          groupValue: selectedUsertype,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedUsertype = value;
+                            });
+                          },
                         ),
-                      );
-                    }).toList(),
-                    onChanged: (newValue) {
-                      setState(() {
-                        selectedUsertype = newValue!;
-                      });
-                    },
-                    icon: Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.teal,
+                        AnimatedRadioButton(
+                          label: "Nurse",
+                          value: 'nurse',
+                          groupValue: selectedUsertype,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedUsertype = value;
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                    iconSize: 30,
-                  ),
+                  ],
                 ),
                 SizedBox(height: 20),
                 // Email field with animation on focus
@@ -187,15 +192,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 SizedBox(height: 40),
                 // Footer with branding
-                ElevatedButton(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LogoutScreen(),
-                    ),
-                  ),
-                  child: Text('Lab login'),
-                ),
                 Column(
                   children: [
                     Text(
@@ -231,6 +227,62 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class AnimatedRadioButton extends StatelessWidget {
+  final String label;
+  final String value;
+  final String groupValue;
+  final ValueChanged<String> onChanged;
+
+  const AnimatedRadioButton({
+    required this.label,
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == groupValue;
+
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.black : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.white,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected ? Colors.white : Colors.grey.shade600,
+            ),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.grey.shade800,
+              ),
+            ),
+          ],
         ),
       ),
     );

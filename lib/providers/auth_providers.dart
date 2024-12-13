@@ -1,6 +1,8 @@
 import 'package:doctorapp/Provider.dart';
 import 'package:doctorapp/StateProvider.dart';
 import 'package:doctorapp/models/getDoctorProfile.dart';
+import 'package:doctorapp/models/getLabModel.dart';
+import 'package:doctorapp/models/getLabsPatient.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/models/getNurseProfile.dart';
 import 'package:doctorapp/repositories/auth_repository.dart';
@@ -128,6 +130,11 @@ final assignedPatientsProvider = FutureProvider<List<Patient1>>((ref) async {
   final authRepository = ref.read(authRepositoryProvider);
   return await authRepository.getAssignedPatients();
 });
+final labPatientsProvider =
+    StateNotifierProvider<LabPatientsNotifier, List<LabPatient>>((ref) {
+  return LabPatientsNotifier();
+});
+
 
 // final assignedLabsProvider = FutureProvider<List<AssignedLab>>((ref) async {
 //   final authRepository = ref.read(authRepositoryProvider);
