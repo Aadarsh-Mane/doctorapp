@@ -17,11 +17,15 @@ class PatientListScreen extends ConsumerWidget {
       ),
       body: patientListAsync.when(
         data: (patients) {
+          final filteredPatients = patients
+              .where((patient) => patient.admissionRecords.isNotEmpty)
+              .toList();
+
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
-            itemCount: patients.length,
+            itemCount: filteredPatients.length,
             itemBuilder: (context, index) {
-              final patient = patients[index];
+              final patient = filteredPatients[index];
               return Card(
                 margin:
                     const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
@@ -71,6 +75,13 @@ class PatientListScreen extends ConsumerWidget {
                               const SizedBox(height: 5),
                               Text(
                                 'Patient ID: ${patient.patientId}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              Text(
+                                'Record: ${patient.admissionRecords}',
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.black54,

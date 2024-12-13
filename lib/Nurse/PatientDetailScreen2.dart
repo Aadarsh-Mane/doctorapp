@@ -417,6 +417,17 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               _addFollowUp(widget.patient.patientId, record.id),
                           child: const Text('Add Follow-Up'),
                         ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                          ),
+                          onPressed: () =>
+                              _addFollowUp(widget.patient.patientId, record.id),
+                          child: const Text('Add 4hr Follow-Up'),
+                        ),
                       ],
                     ),
                   ),
@@ -458,8 +469,16 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                     MaterialStateProperty.all(Colors.teal.shade100),
                 columns: const [
                   DataColumn(
-                    label: Text('Label', style: TextStyle(fontSize: 14)),
-                  ),
+                      label: Text(
+                    '2-Hour',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple, // Text color for the title
+                      fontStyle:
+                          FontStyle.italic, // Adds italic style to the text
+                    ),
+                  )),
                   DataColumn(
                     label: Text('Value', style: TextStyle(fontSize: 14)),
                   ),
@@ -495,7 +514,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                       ),
                       DataCell(
                         Text(
-                          '',
+                          followUp.date,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.redAccent, // Text color for the dash
