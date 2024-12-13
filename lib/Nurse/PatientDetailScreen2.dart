@@ -55,133 +55,165 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     TextEditingController bloodSugarLevelController = TextEditingController();
     TextEditingController ivFluidController = TextEditingController();
     TextEditingController urineController = TextEditingController();
+    TextEditingController nasogastricController = TextEditingController();
+    TextEditingController rtFeedOralController = TextEditingController();
+    TextEditingController cvpController = TextEditingController();
+    TextEditingController fiO2Controller = TextEditingController();
+    TextEditingController pipController = TextEditingController();
+    TextEditingController peepController = TextEditingController();
+    TextEditingController ieRatioController = TextEditingController();
 
     await showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
+        return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0),
           ),
-          title: const Text('Add Follow-Up', style: TextStyle(fontSize: 18)),
-          content: SingleChildScrollView(
-            child: Card(
-              elevation: 8, // Shadow for the card
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Form(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Section Heading
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Text(
-                          'Patient Follow-Up Information',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+          child: Container(
+            width: MediaQuery.of(context).size.width *
+                0.9, // Set width to 90% of the screen
+            constraints: BoxConstraints(
+              maxHeight:
+                  MediaQuery.of(context).size.height * 0.8, // Limit height
+            ),
+            child: SingleChildScrollView(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section Heading
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Text(
+                            'Patient Follow-Up Information',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                      // Grouping the related fields
-                      _buildSectionTitle('Vitals'),
-                      _buildNumberInputField(
-                          temperatureController, 'Temperature'),
-                      _buildNumberInputField(pulseController, 'Pulse'),
-                      _buildTextField(
-                          bloodPressureController, 'Blood Pressure'),
-                      _buildNumberInputField(
-                          oxygenSaturationController, 'Oxygen Saturation'),
-                      _buildNumberInputField(
-                          bloodSugarLevelController, 'Blood Sugar Level'),
+                        // Grouping the related fields
+                        _buildSectionTitle('Vitals'),
+                        _buildNumberInputField(
+                            temperatureController, 'Temperature'),
+                        _buildNumberInputField(pulseController, 'Pulse'),
+                        _buildTextField(
+                            bloodPressureController, 'Blood Pressure'),
+                        _buildNumberInputField(
+                            oxygenSaturationController, 'Oxygen Saturation'),
+                        _buildNumberInputField(
+                            bloodSugarLevelController, 'Blood Sugar Level'),
 
-                      // Grouping observations and notes
-                      _buildSectionTitle('Observations'),
-                      _buildTextField(notesController, 'Notes'),
-                      _buildTextField(observationsController, 'Observations'),
+                        // Grouping observations and notes
+                        _buildSectionTitle('Observations'),
+                        _buildTextField(notesController, 'Notes'),
+                        _buildTextField(observationsController, 'Observations'),
 
-                      // IV fluid and Urine output
-                      _buildSectionTitle('Other Information'),
-                      _buildTextField(ivFluidController, 'Intravenous Fluids'),
-                      _buildTextField(urineController, 'Urinary Output'),
-                    ],
+                        // IV fluid and Urine output
+                        _buildSectionTitle('Other Information'),
+                        _buildTextField(
+                            ivFluidController, 'Intravenous Fluids'),
+                        _buildTextField(urineController, 'Urinary Output'),
+
+                        // Action Buttons
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final body = {
+                                  "patientId": patientId,
+                                  "admissionId": admissionId,
+                                  "notes": notesController.text,
+                                  "observations": observationsController.text,
+                                  "temperature": double.tryParse(
+                                          temperatureController.text) ??
+                                      0.0,
+                                  "pulse":
+                                      int.tryParse(pulseController.text) ?? 0,
+                                  "bloodPressure": bloodPressureController.text,
+                                  "oxygenSaturation": int.tryParse(
+                                          oxygenSaturationController.text) ??
+                                      0,
+                                  "bloodSugarLevel": int.tryParse(
+                                          bloodSugarLevelController.text) ??
+                                      0,
+                                  "ivFluid": ivFluidController.text,
+                                  "urine": urineController.text,
+                                };
+
+                                final url = Uri.parse(
+                                    '${VERCEL_URL}/nurse/addFollowUp');
+
+                                try {
+                                  final response = await http.post(
+                                    url,
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer $token',
+                                    },
+                                    body: json.encode(body),
+                                  );
+
+                                  if (response.statusCode == 201) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Follow-up added successfully!')),
+                                    );
+                                    setState(() {}); // Refresh UI
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Failed to add follow-up!')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e')),
+                                  );
+                                }
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.greenAccent,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Submit',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final body = {
-                  "patientId": patientId,
-                  "admissionId": admissionId,
-                  "notes": notesController.text,
-                  "observations": observationsController.text,
-                  "temperature":
-                      double.tryParse(temperatureController.text) ?? 0.0,
-                  "pulse": int.tryParse(pulseController.text) ?? 0,
-                  "bloodPressure": bloodPressureController.text,
-                  "oxygenSaturation":
-                      int.tryParse(oxygenSaturationController.text) ?? 0,
-                  "bloodSugarLevel":
-                      int.tryParse(bloodSugarLevelController.text) ?? 0,
-                  "ivFluid": ivFluidController.text,
-                  "urine": urineController.text,
-                };
-
-                final url = Uri.parse('${VERCEL_URL}/nurse/addFollowUp');
-
-                try {
-                  final response = await http.post(
-                    url,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': 'Bearer $token',
-                    },
-                    body: json.encode(body),
-                  );
-
-                  if (response.statusCode == 201) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Follow-up added successfully!')),
-                    );
-                    setState(() {}); // Refresh UI
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to add follow-up!')),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
-                }
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent,
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Submit',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
         );
       },
     );
