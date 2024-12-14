@@ -5,54 +5,32 @@ import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:async';
 
 final assignedPatientsProvider =
-    StateNotifierProvider<AssignedPatientsNotifier, AsyncValue<List<Patient1>>>(
+    StateNotifierProvider<AdmittedPatientsNotifier, AsyncValue<List<Patient1>>>(
   (ref) {
     final authRepository = ref.read(authRepositoryProvider);
-    final notifier = AssignedPatientsNotifier(authRepository);
-    notifier.fetchAssignedPatients();
+    final notifier = AdmittedPatientsNotifier(authRepository);
+    notifier.fetchAdmittedPatients();
     return notifier;
   },
 );
 
-class AssignedPatientsScreen extends ConsumerStatefulWidget {
-  const AssignedPatientsScreen({Key? key}) : super(key: key);
+class AdmittedPatientsScreen extends ConsumerStatefulWidget {
+  const AdmittedPatientsScreen({Key? key}) : super(key: key);
 
   @override
   _AssignedPatientsScreenState createState() => _AssignedPatientsScreenState();
 }
 
 class _AssignedPatientsScreenState
-    extends ConsumerState<AssignedPatientsScreen> {
-  Timer? _refreshTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initial manual refresh
-    ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
-    // Set up the timer to refresh every 1 minute (60 seconds)
-    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
-    });
-  }
-
-  @override
-  void dispose() {
-    // Cancel the timer when the screen is disposed to avoid memory leaks
-    _refreshTimer?.cancel();
-    super.dispose();
-  }
-
+    extends ConsumerState<AdmittedPatientsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+    ref.refresh(assignedPatientsProvider.notifier).fetchAdmittedPatients();
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
     final assignedPatients = ref.watch(assignedPatientsProvider);
@@ -71,7 +49,7 @@ class _AssignedPatientsScreenState
             onPressed: () {
               ref
                   .refresh(assignedPatientsProvider.notifier)
-                  .fetchAssignedPatients();
+                  .fetchAdmittedPatients();
             },
           ),
           IconButton(
@@ -92,14 +70,6 @@ class _AssignedPatientsScreenState
           itemCount: patients.length,
           itemBuilder: (context, index) {
             final patient = patients[index];
-            final admissionStatus = patient.admissionRecords.isNotEmpty
-                ? patient.admissionRecords.first.status
-                : 'Pending';
-
-            // Set status color based on the admission status
-            Color statusColor =
-                admissionStatus == 'admitted' ? Colors.green : Colors.red;
-
             return Dismissible(
               key: Key(patient.id),
               direction: DismissDirection.endToStart,
@@ -115,7 +85,7 @@ class _AssignedPatientsScreenState
                 } else {
                   ref
                       .refresh(assignedPatientsProvider.notifier)
-                      .fetchAssignedPatients();
+                      .fetchAdmittedPatients();
                 }
               },
               background: Container(
@@ -145,18 +115,6 @@ class _AssignedPatientsScreenState
                 child: ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  leading: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.teal.shade100,
-                    child: Text(
-                      patient.name[0].toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
-                    ),
-                  ),
                   title: Text(
                     patient.name,
                     style: TextStyle(
@@ -164,44 +122,16 @@ class _AssignedPatientsScreenState
                         fontWeight: FontWeight.w600,
                         color: Colors.black87),
                   ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Age: ${patient.age}, Gender: ${patient.gender}',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                      ),
-                      SizedBox(height: 5),
-                      // Display status with color changes based on status
-                      Text(
-                        'Status: $admissionStatus',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              statusColor, // Apply the color based on the status
-                        ),
-                      ),
-                    ],
+                  subtitle: Text(
+                    'Age: ${patient.age}, Gender: ${patient.gender}',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.assignment_late,
-                            color: Colors.deepPurple),
-                        onPressed: () async {
-                          await _handleAssignLab(context, patient, ref);
-                        },
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.person_add,
-                            color: Colors.deepPurple),
-                        onPressed: () async {
-                          await _admitPatient(patient, ref, context);
-                        },
-                      ),
-                    ],
+                  trailing: IconButton(
+                    icon: const Icon(Icons.assignment_late,
+                        color: Colors.deepPurple),
+                    onPressed: () async {
+                      await _handleAssignLab(context, patient, ref);
+                    },
                   ),
                   onTap: () {
                     Navigator.push(
@@ -223,40 +153,6 @@ class _AssignedPatientsScreenState
         ),
       ),
     );
-  }
-
-  Future<void> _admitPatient(
-      Patient1 patient, WidgetRef ref, BuildContext context) async {
-    try {
-      // Assuming the first admission record's ID is used as the admissionId
-      if (patient.admissionRecords.isEmpty) {
-        throw Exception('No admission records found for this patient.');
-      }
-
-      final admissionId = patient.admissionRecords.first
-          .id; // Adjust logic if not using the first record
-
-      final authRepository = ref.read(authRepositoryProvider);
-      final result = await authRepository.admitPatient1(
-        admissionId: admissionId,
-      );
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message']),
-          backgroundColor: result['success'] ? Colors.green : Colors.red,
-        ),
-      );
-
-      ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to admit patient: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
   }
 
   Future<bool?> _showDischargeConfirmationDialog(BuildContext context) async {
@@ -304,7 +200,7 @@ class _AssignedPatientsScreenState
         ),
       );
 
-      ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+      ref.refresh(assignedPatientsProvider.notifier).fetchAdmittedPatients();
     } catch (e) {
       print('Error discharging patient: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -351,7 +247,7 @@ class _AssignedPatientsScreenState
         ),
       );
 
-      ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
+      ref.refresh(assignedPatientsProvider.notifier).fetchAdmittedPatients();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

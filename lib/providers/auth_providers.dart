@@ -134,6 +134,10 @@ final labPatientsProvider =
     StateNotifierProvider<LabPatientsNotifier, List<LabPatient>>((ref) {
   return LabPatientsNotifier();
 });
+final followUpsProvider =
+    StateNotifierProvider<FollowUpsNotifier, List<FollowUp>>((ref) {
+  return FollowUpsNotifier();
+});
 
 
 // final assignedLabsProvider = FutureProvider<List<AssignedLab>>((ref) async {

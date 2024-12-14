@@ -1,14 +1,20 @@
+import 'dart:convert';
+
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:doctorapp/Doctor/DoctorAdmittedPatientScreen.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Doctor/DoctorListScreen.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
+import 'package:doctorapp/constants/Urls.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
-import 'package:doctorapp/screens/LogoutScreen.dart';
+import 'package:doctorapp/screens/DoctorProfileScreen.dart';
 import 'package:doctorapp/Doctor/DoctorAssignedPatientScreen.dart';
 import 'package:doctorapp/service/NotificationService.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:animations/animations.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DoctorMainScreen extends StatefulWidget {
@@ -23,7 +29,7 @@ class _DoctorMainScreenState extends State<DoctorMainScreen> {
     HomeScreen(),
     AssignedPatientsScreen(),
     AssignedLabsScreen(),
-    LogoutScreen(),
+    DoctorProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -105,7 +111,7 @@ class DoctorDrawer extends StatelessWidget {
                 OpenContainer(
                   closedBuilder: (context, openContainer) => ListTile(
                     leading: const Icon(Icons.assignment_turned_in_sharp),
-                    title: const Text('Assigned Labs'),
+                    title: const Text('Admitted Patients'),
                     onTap: openContainer,
                   ),
                   openBuilder: (context, closeContainer) =>
@@ -118,7 +124,8 @@ class DoctorDrawer extends StatelessWidget {
                     title: const Text('Doctors '),
                     onTap: openContainer,
                   ),
-                  openBuilder: (context, closeContainer) => DoctorListScreen(),
+                  openBuilder: (context, closeContainer) =>
+                      AdmittedPatientsScreen(),
                   transitionDuration: const Duration(milliseconds: 500),
                 ),
                 OpenContainer(
@@ -212,6 +219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          // Carousel for images
           CarouselSlider(
             options: CarouselOptions(
               autoPlay: true,
@@ -247,11 +255,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-          // Check if doctorProfile is null or not
+          // Doctor profile section
           doctorProfile == null
               ? const CircularProgressIndicator() // Show loading while fetching
               : doctorProfile != null
                   ? Card(
+                      color: Colors.black,
                       elevation: 8,
                       margin: const EdgeInsets.all(16.0),
                       shape: RoundedRectangleBorder(
@@ -274,6 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 Text(
                                   "Welcome Doctor : ${doctorProfile!.doctorName}",
                                   style: const TextStyle(
+                                    color: Colors.cyan,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -282,7 +292,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   "Email : ${doctorProfile.email}",
                                   style: const TextStyle(
                                     fontSize: 16,
-                                    color: Colors.black,
+                                    color: Colors.cyan,
                                   ),
                                 ),
                               ],
@@ -292,8 +302,147 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     )
                   : const CircularProgressIndicator(),
+          Divider(),
+          // Add the cards for other doctors below the profile
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Our Doctors',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Divider(),
+          FutureBuilder<List<Doctor>>(
+            future: fetchDoctors(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: Text('No doctors available'));
+              } else {
+                final doctors = snapshot.data!;
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GridView.builder(
+                    shrinkWrap:
+                        true, // To make it scrollable inside SingleChildScrollView
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2, // Two columns
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.75, // Adjust to fit the card
+                    ),
+                    itemCount: doctors.length,
+                    itemBuilder: (context, index) {
+                      final doctor = doctors[index];
+                      return Card(
+                        elevation: 12,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        shadowColor: Colors.black.withOpacity(0.2),
+                        color: Colors.black,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image with a circular border for the doctor's photo
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.asset(
+                                  'assets/images/doctor1.png', // Placeholder image
+                                  height: 100, // Fixed height for the image
+                                  width: 100,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              // Doctor Name with bold styling and text overflow handling
+                              Text(
+                                doctor.doctorName,
+                                style: const TextStyle(
+                                  color: Colors.cyan,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                maxLines: 1,
+                              ),
+                              const SizedBox(height: 4),
+                              // Specialization text (if available)
+                              // Text(
+                              //   doctor.specialization,  // Assuming this is a valid field
+                              //   style: const TextStyle(
+                              //     fontSize: 14,
+                              //     color: Colors.grey,
+                              //   ),
+                              // ),
+                              const SizedBox(height: 4),
+                              // Email text with a smaller font size and black color
+                              Text(
+                                'Email: ${doctor.email}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.cyan,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              // Wrap the button in a `Flexible` widget to prevent overflow
+                              Flexible(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    // Navigate to the doctor's profile page
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        Colors.deepPurple, // Button color
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10),
+                                  ),
+                                  child: const Text(
+                                    'View Profile',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
     );
+  }
+
+  Future<List<Doctor>> fetchDoctors() async {
+    final response =
+        await http.get(Uri.parse('${BASE_URL}/reception/listDoctors'));
+    print(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      if (data.containsKey('doctors')) {
+        List<dynamic> doctorsJson = data['doctors'];
+        return doctorsJson.map((json) => Doctor.fromJson(json)).toList();
+      } else {
+        throw Exception('Doctors key not found in response');
+      }
+    } else {
+      throw Exception('Failed to load doctors');
+    }
   }
 }

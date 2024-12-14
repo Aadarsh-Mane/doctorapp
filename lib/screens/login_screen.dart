@@ -2,7 +2,7 @@ import 'package:doctorapp/Doctor/DoctorMainScreen.dart';
 import 'package:doctorapp/Labs/LabScreen.dart';
 import 'package:doctorapp/Nurse/NurseMainScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
-import 'package:doctorapp/screens/LogoutScreen.dart';
+import 'package:doctorapp/screens/DoctorProfileScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

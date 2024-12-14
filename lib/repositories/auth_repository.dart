@@ -154,7 +154,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/doctors/getDoctorProfile'),
+        Uri.parse('${BASE_URL}/doctors/getDoctorProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -263,6 +263,57 @@ class AuthRepository {
     }
   }
 
+  Future<List<Patient1>> getAdmittedPatients() async {
+    try {
+      // Retrieve the stored token
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      print(token);
+      if (token == null) {
+        throw Exception('No authentication token found.');
+      }
+
+      final response = await http.get(
+        Uri.parse('${BASE_URL}/doctors/getAdmittedPatient'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      // print(response.body); // Inspect the API response
+      // print('Full response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['patients'] as List<dynamic>;
+        return data.map((json) => Patient1.fromJson(json)).toList();
+      } else {
+        throw Exception(
+            'Failed to fetch assigned patients. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching assigned patients: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> admitPatient({
+    required String patientId,
+    required String admissionId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final response = await http.post(
+      Uri.parse('$BASE_URL/doctors/admitPatient'),
+      body: {
+        'patientId': patientId,
+        'admissionId': admissionId,
+      },
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    print(response.body);
+    return jsonDecode(response.body);
+  }
+
   Future<Map<String, dynamic>> assignPatientToLab({
     required String patientId,
     required String admissionId,
@@ -359,6 +410,54 @@ class AuthRepository {
       print('Token stored successfully');
     } else {
       print('Failed to store token: ${response.body}');
+    }
+  }
+
+  Future<List<Patient1>> fetchAdmittedPatients() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final response = await http.get(
+      Uri.parse('${BASE_URL}/doctors/getadmittedPatient'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    print(token);
+    print("this${response.body}"); // Check the response here
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      final patients = (jsonData['admittedPatients'] as List)
+          .map((patient) => Patient1.fromJson(patient))
+          .toList();
+      return patients;
+    } else {
+      throw Exception(
+          'Failed to load admitted patients: ${response.reasonPhrase}');
+    }
+  }
+
+  Future<Map<String, dynamic>> admitPatient1(
+      {required String admissionId}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      throw Exception('No authentication token found.');
+    }
+    final response = await http.post(
+      Uri.parse('http://192.168.0.103:3000/doctors/admitPatient'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: jsonEncode({'admissionId': admissionId}),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to admit patient: ${response.body}');
     }
   }
 }

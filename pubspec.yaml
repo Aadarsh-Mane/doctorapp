@@ -43,6 +43,12 @@ dependencies:
   socket_io_client: ^3.0.2
   jwt_decode: ^0.3.1
   intl: ^0.20.1
+  flutter_swipe_action_cell: ^3.1.5
+  flutter_animate: ^4.5.2
+  url_launcher: ^6.3.1
+  pdf: ^3.11.1
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
 
 dev_dependencies:
   flutter_test:

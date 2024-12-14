@@ -1,2 +1,2 @@
-const BASE_URL = '${VERCEL_URL}';
+const BASE_URL = 'http://192.168.0.103:3000';
 const VERCEL_URL = 'https://ai-healthcare-plum.vercel.app';

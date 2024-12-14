@@ -281,192 +281,213 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
         title: Text('${widget.patient.name} Details'),
         backgroundColor: Colors.teal,
         elevation: 5,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () async {
+              setState(() {
+                // Trigger a refresh of follow-ups
+                _fetchFollowUps(widget.patient.admissionRecords.first.id);
+              });
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            // Trigger a refresh of follow-ups
+            _fetchFollowUps(widget.patient.admissionRecords.first.id);
+          });
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 8,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.teal[100],
+                        child: Icon(Icons.person, size: 30, color: Colors.teal),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 500),
+                              child: Text('${widget.patient.name}',
+                                  key: ValueKey(widget.patient.name),
+                                  style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold)),
+                            ),
+                            const SizedBox(height: 8),
+                            Text('Patient ID: ${widget.patient.patientId}',
+                                style: const TextStyle(fontSize: 16)),
+                            Text('Age: ${widget.patient.age}',
+                                style: const TextStyle(fontSize: 16)),
+                            Text('Gender: ${widget.patient.gender}',
+                                style: const TextStyle(fontSize: 16)),
+                            Text('Contact: ${widget.patient.contact}',
+                                style: const TextStyle(fontSize: 16)),
+                            Text('Address: ${widget.patient.address}',
+                                style: const TextStyle(fontSize: 16)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              elevation: 8,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.teal[100],
-                      child: Icon(Icons.person, size: 30, color: Colors.teal),
+              const SizedBox(height: 20),
+              const Text('Admission Records:',
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
+              Column(
+                children: widget.patient.admissionRecords.map((record) {
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
+                    elevation: 6,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 500),
-                            child: Text('${widget.patient.name}',
-                                key: ValueKey(widget.patient.name),
-                                style: const TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.bold)),
+                          Text('Reason: ${record.reasonForAdmission}',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text('Date: ${record.admissionDate}',
+                              style: const TextStyle(fontSize: 16)),
+                          const SizedBox(height: 8),
+                          Text('Symptoms: ${record.symptoms}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Initial Diagnosis: ${record.initialDiagnosis}',
+                              style: const TextStyle(fontSize: 16)),
+                          const SizedBox(height: 8),
+                          FutureBuilder<List<FollowUp>>(
+                            future: _fetchFollowUps(record.id),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+                              var followUps = snapshot.data ?? [];
+                              if (followUps.isEmpty) {
+                                return const Text('No follow-ups available.',
+                                    style: TextStyle(fontSize: 14));
+                              }
+
+                              final dateFormat =
+                                  DateFormat('d/M/yyyy, HH:mm:ss');
+
+                              followUps.sort((a, b) {
+                                final dateA = dateFormat.parse(a.date);
+                                final dateB = dateFormat.parse(b.date);
+                                return dateB.compareTo(dateA); // Newest first
+                              });
+
+                              final latestFollowUp = followUps.first;
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Latest Follow-Up:',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
+                                  AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 500),
+                                    opacity: 1.0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0, horizontal: 8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Date: ${latestFollowUp.date}',
+                                              style: const TextStyle(
+                                                  fontSize: 14)),
+                                          Text('Notes: ${latestFollowUp.notes}',
+                                              style: const TextStyle(
+                                                  fontSize: 14)),
+                                          Text(
+                                              'Temperature: ${latestFollowUp.temperature}',
+                                              style: const TextStyle(
+                                                  fontSize: 14)),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(),
+                                  const Text('All Follow-Ups:',
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold)),
+                                  ...followUps.map((followUp) {
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 4.0, horizontal: 8.0),
+                                      child: AnimatedSize(
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: _buildFollowUpTable(followUp),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 8),
-                          Text('Patient ID: ${widget.patient.patientId}',
-                              style: const TextStyle(fontSize: 16)),
-                          Text('Age: ${widget.patient.age}',
-                              style: const TextStyle(fontSize: 16)),
-                          Text('Gender: ${widget.patient.gender}',
-                              style: const TextStyle(fontSize: 16)),
-                          Text('Contact: ${widget.patient.contact}',
-                              style: const TextStyle(fontSize: 16)),
-                          Text('Address: ${widget.patient.address}',
-                              style: const TextStyle(fontSize: 16)),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                            ),
+                            onPressed: () => _addFollowUp(
+                                widget.patient.patientId, record.id),
+                            child: const Text('Add Follow-Up'),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                            ),
+                            onPressed: () => _addFollowUp(
+                                widget.patient.patientId, record.id),
+                            child: const Text('Add 4hr Follow-Up'),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  );
+                }).toList(),
               ),
-            ),
-            const SizedBox(height: 20),
-            const Text('Admission Records:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            Column(
-              children: widget.patient.admissionRecords.map((record) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  elevation: 6,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Reason: ${record.reasonForAdmission}',
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Date: ${record.admissionDate}',
-                            style: const TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
-                        Text('Symptoms: ${record.symptoms}',
-                            style: const TextStyle(fontSize: 16)),
-                        Text('Initial Diagnosis: ${record.initialDiagnosis}',
-                            style: const TextStyle(fontSize: 16)),
-                        const SizedBox(height: 8),
-                        FutureBuilder<List<FollowUp>>(
-                          future: _fetchFollowUps(record.id),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-                            if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            }
-                            var followUps = snapshot.data ?? [];
-                            if (followUps.isEmpty) {
-                              return const Text('No follow-ups available.',
-                                  style: TextStyle(fontSize: 14));
-                            }
-
-                            final dateFormat = DateFormat('d/M/yyyy, HH:mm:ss');
-
-                            followUps.sort((a, b) {
-                              final dateA = dateFormat.parse(a.date);
-                              final dateB = dateFormat.parse(b.date);
-                              return dateB.compareTo(dateA); // Newest first
-                            });
-
-                            final latestFollowUp = followUps.first;
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Latest Follow-Up:',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold)),
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 500),
-                                  opacity: 1.0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4.0, horizontal: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text('Date: ${latestFollowUp.date}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
-                                        Text('Notes: ${latestFollowUp.notes}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
-                                        Text(
-                                            'Temperature: ${latestFollowUp.temperature}',
-                                            style:
-                                                const TextStyle(fontSize: 14)),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const Divider(),
-                                const Text('All Follow-Ups:',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold)),
-                                ...followUps.map((followUp) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 4.0, horizontal: 8.0),
-                                    child: AnimatedSize(
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      child: _buildFollowUpTable(followUp),
-                                    ),
-                                  );
-                                }).toList(),
-                              ],
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                          ),
-                          onPressed: () =>
-                              _addFollowUp(widget.patient.patientId, record.id),
-                          child: const Text('Add Follow-Up'),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15.0),
-                            ),
-                          ),
-                          onPressed: () =>
-                              _addFollowUp(widget.patient.patientId, record.id),
-                          child: const Text('Add 4hr Follow-Up'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -497,26 +518,57 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                 dataRowHeight: 60,
                 headingRowHeight: 40,
                 border: TableBorder.all(color: Colors.grey.shade300),
-                headingRowColor:
-                    MaterialStateProperty.all(Colors.teal.shade100),
+                headingRowColor: MaterialStateProperty.all(Colors.black),
                 columns: const [
                   DataColumn(
-                      label: Text(
-                    '2-Hour',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple, // Text color for the title
-                      fontStyle:
-                          FontStyle.italic, // Adds italic style to the text
+                    label: Text(
+                      'Type',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
-                  )),
+                  ),
                   DataColumn(
-                    label: Text('Value', style: TextStyle(fontSize: 14)),
+                    label: Text('Values ',
+                        style: TextStyle(fontSize: 14, color: Colors.white)),
                   ),
                 ],
                 rows: [
-                  _buildTableRow('Date', followUp.date),
+                  // First row (Date) with custom color
+                  DataRow(
+                    color: MaterialStateProperty.resolveWith<Color>(
+                      (Set<MaterialState> states) {
+                        // Custom color for the first row (Date)
+                        return Colors.lightBlueAccent
+                            .withOpacity(0.2); // Teal color for 'Date' row
+                      },
+                    ),
+                    cells: [
+                      DataCell(
+                        Text(
+                          '2-Hour Follow Up',
+                          style: TextStyle(
+                            color: Colors.deepPurple,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        Text(
+                          followUp.date,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   _buildTableRow(
                       'Temperature', followUp.temperature.toString()),
                   _buildTableRow('Pulse', followUp.pulse.toString()),
@@ -525,7 +577,6 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                   DataRow(
                     color: MaterialStateProperty.resolveWith<Color>(
                       (Set<MaterialState> states) {
-                        // Set a background color for the row
                         return Colors.lightBlueAccent
                             .withOpacity(0.2); // Light blue row color
                       },
@@ -537,10 +588,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color:
-                                Colors.deepPurple, // Text color for the title
-                            fontStyle: FontStyle
-                                .italic, // Adds italic style to the text
+                            color: Colors.deepPurple,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
                       ),
@@ -549,9 +598,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                           followUp.date,
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.redAccent, // Text color for the dash
-                            fontWeight:
-                                FontWeight.w500, // Slightly lighter weight
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

@@ -3,7 +3,8 @@ import 'package:doctorapp/Doctor/DoctorAssignedLabsPatient.dart';
 import 'package:doctorapp/Nurse/AttendanceScreen.dart';
 import 'package:doctorapp/Nurse/PatientListScreen.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
-import 'package:doctorapp/screens/LogoutScreen.dart';
+import 'package:doctorapp/screens/DoctorProfileScreen.dart';
+import 'package:doctorapp/screens/NurseProfileScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:animations/animations.dart';
@@ -22,7 +23,7 @@ class _NurseMainScreenState extends State<NurseMainScreen> {
     PatientListScreen(),
     AttendanceScreen(),
     // AssignedLabsScreen(),
-    LogoutScreen(),
+    NurseProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
