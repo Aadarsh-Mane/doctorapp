@@ -5,6 +5,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart'; // For PDF document creation
+import 'package:pdf/widgets.dart' as pw; // For PDF widget creation
+import 'package:printing/printing.dart'; // For printing or viewing the PDF
 
 class PatientDetailScreen4 extends StatefulWidget {
   final Patient1 patient;
@@ -17,6 +20,59 @@ class PatientDetailScreen4 extends StatefulWidget {
 }
 
 class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
+  Future<void> generatePdf(
+      List<FollowUp> followUps, BuildContext context) async {
+    final pdf = pw.Document();
+
+    // Create the PDF structure
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                'Patient Follow-Up Report',
+                style:
+                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text('Follow-Ups:'),
+              pw.SizedBox(height: 10),
+              pw.Table.fromTextArray(
+                headers: [
+                  'Date',
+                  'Notes',
+                  'Temperature',
+                  'oxygen',
+                  'bloodPressure',
+                  'four hr temperature'
+                ],
+                data: followUps
+                    .map((followUp) => [
+                          followUp.date,
+                          followUp.notes,
+                          followUp.temperature,
+                          followUp.oxygenSaturation,
+                          followUp.bloodPressure,
+                          followUp.fourhrTemperature,
+                          followUp.fourhrbloodPressure,
+                          followUp.fourhrivFluid,
+                        ])
+                    .toList(),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Display the generated PDF
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async {
+      return pdf.save();
+    });
+  }
+
   Future<List<FollowUp>> _fetchFollowUps(String admissionId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
@@ -291,6 +347,14 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
               });
             },
           ),
+          ElevatedButton(
+            onPressed: () async {
+              final followUps = await _fetchFollowUps(
+                  widget.patient.admissionRecords.first.id);
+              generatePdf(followUps, context);
+            },
+            child: const Text('Generate PDF'),
+          )
         ],
       ),
       body: RefreshIndicator(
