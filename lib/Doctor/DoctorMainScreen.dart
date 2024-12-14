@@ -70,27 +70,35 @@ class DoctorDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black, // Black drawer background
       child: Column(
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(),
+            decoration: BoxDecoration(
+              color: Colors.transparent, // Cyan background for the header
+              borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20)), // Rounded top corners
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
                   child: CircleAvatar(
-                    backgroundColor: Colors.transparent,
+                    backgroundColor: Colors.black,
                     radius: 40,
-                    backgroundImage: AssetImage(
-                        'assets/images/sk.png'), // Adjusted image size
+                    backgroundImage: AssetImage('assets/images/sk.png'),
                   ),
                 ),
                 const SizedBox(height: 10),
                 const Text(
                   "Powered By\n20's Developers",
-                  style: TextStyle(color: Colors.black, fontSize: 18),
+                  style: TextStyle(
+                    color: Colors
+                        .white, // White text in the header for better contrast
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -99,62 +107,66 @@ class DoctorDrawer extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
-                OpenContainer(
-                  closedBuilder: (context, openContainer) => ListTile(
-                    leading: const Icon(Icons.assignment_turned_in_sharp),
-                    title: const Text('Attendance'),
-                    onTap: openContainer,
-                  ),
-                  openBuilder: (context, closeContainer) => PatientListScreen(),
-                  transitionDuration: const Duration(milliseconds: 500),
+                _buildDrawerItem(
+                  context,
+                  Icons.assignment_turned_in_sharp,
+                  'Attendance',
+                  PatientListScreen(),
                 ),
-                OpenContainer(
-                  closedBuilder: (context, openContainer) => ListTile(
-                    leading: const Icon(Icons.assignment_turned_in_sharp),
-                    title: const Text('Admitted Patients'),
-                    onTap: openContainer,
-                  ),
-                  openBuilder: (context, closeContainer) =>
-                      AssignedLabsScreen(),
-                  transitionDuration: const Duration(milliseconds: 500),
+                _buildDrawerItem(
+                  context,
+                  Icons.assignment_turned_in_sharp,
+                  'Admitted Patients',
+                  AssignedLabsScreen(),
                 ),
-                OpenContainer(
-                  closedBuilder: (context, openContainer) => ListTile(
-                    leading: const Icon(Icons.assignment_turned_in_sharp),
-                    title: const Text('Doctors '),
-                    onTap: openContainer,
-                  ),
-                  openBuilder: (context, closeContainer) =>
-                      AdmittedPatientsScreen(),
-                  transitionDuration: const Duration(milliseconds: 500),
+                _buildDrawerItem(
+                  context,
+                  Icons.assignment_turned_in_sharp,
+                  'Doctors',
+                  AdmittedPatientsScreen(),
                 ),
-                OpenContainer(
-                  closedBuilder: (context, openContainer) => ListTile(
-                    leading: const Icon(Icons.notifications),
-                    title: const Text('Notifications'),
-                    onTap: openContainer,
-                  ),
-                  openBuilder: (context, closeContainer) => const Scaffold(
+                _buildDrawerItem(
+                  context,
+                  Icons.notifications,
+                  'Notifications',
+                  const Scaffold(
                     body: Center(child: Text('Notifications Screen')),
                   ),
-                  transitionDuration: const Duration(milliseconds: 500),
                 ),
-                OpenContainer(
-                  closedBuilder: (context, openContainer) => ListTile(
-                    leading: const Icon(Icons.report),
-                    title: const Text('Reports'),
-                    onTap: openContainer,
-                  ),
-                  openBuilder: (context, closeContainer) => const Scaffold(
+                _buildDrawerItem(
+                  context,
+                  Icons.report,
+                  'Reports',
+                  const Scaffold(
                     body: Center(child: Text('Reports Screen')),
                   ),
-                  transitionDuration: const Duration(milliseconds: 500),
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawerItem(
+      BuildContext context, IconData icon, String title, Widget screen) {
+    return OpenContainer(
+      closedBuilder: (context, openContainer) => ListTile(
+        leading: Icon(icon, color: Colors.cyan), // Cyan icon color
+        title: Text(
+          title,
+          style: TextStyle(
+            color: Colors.cyan, // Cyan text color
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        onTap: openContainer,
+        tileColor: Colors.black, // Background color for the tile
+      ),
+      openBuilder: (context, closeContainer) => screen,
+      transitionDuration: const Duration(milliseconds: 500),
     );
   }
 }
