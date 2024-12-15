@@ -243,16 +243,19 @@ class _AssignedPatientsScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
-          backgroundColor: result['success'] ? Colors.green : Colors.red,
+          content: Text(result['message'] ?? 'Unknown error occurred.'),
+          backgroundColor:
+              (result['success'] as bool? ?? false) ? Colors.green : Colors.red,
         ),
       );
+      ;
 
       ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
     } catch (e) {
+      print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to admit patient: $e'),
+          content: Text('Failed to admit patient:'),
           backgroundColor: Colors.red,
         ),
       );
