@@ -154,7 +154,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${BASE_URL}/doctors/getDoctorProfile'),
+        Uri.parse('${VERCEL_URL}/doctors/getDoctorProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -274,7 +274,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('${BASE_URL}/doctors/getAdmittedPatient'),
+        Uri.parse('${VERCEL_URL}/doctors/getAdmittedPatient'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -417,7 +417,7 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final response = await http.get(
-      Uri.parse('${BASE_URL}/doctors/getadmittedPatient'),
+      Uri.parse('${VERCEL_URL}/doctors/getadmittedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
       },

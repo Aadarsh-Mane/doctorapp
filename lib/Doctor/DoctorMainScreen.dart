@@ -443,7 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<List<Doctor>> fetchDoctors() async {
     final response =
-        await http.get(Uri.parse('${BASE_URL}/reception/listDoctors'));
+        await http.get(Uri.parse('${VERCEL_URL}/reception/listDoctors'));
     print(response.body);
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);

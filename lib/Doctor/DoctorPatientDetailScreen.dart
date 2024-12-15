@@ -24,45 +24,213 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
       List<FollowUp> followUps, BuildContext context) async {
     final pdf = pw.Document();
 
-    // Create the PDF structure
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: pw.EdgeInsets.all(32),
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
+          return [
+            // Header Section
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  'Spandan Hospital',
+                  style: pw.TextStyle(
+                    fontSize: 28,
+                    fontWeight: pw.FontWeight.bold,
+                    color: PdfColors.teal,
+                  ),
+                ),
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  'Patient Follow-Up Report',
+                  style: pw.TextStyle(
+                    fontSize: 24,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.Divider(thickness: 1.5, color: PdfColors.teal),
+                pw.SizedBox(height: 10),
+                pw.Text(
+                  'Patient Name: ${widget.patient.name}',
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.Text(
+                  'Report Generated: ${DateFormat('dd/MM/yyyy, HH:mm').format(DateTime.now())}',
+                  style: pw.TextStyle(fontSize: 12, color: PdfColors.grey),
+                ),
+                pw.SizedBox(height: 20),
+              ],
+            ),
+
+            // Follow-Ups Section (2-hour fields)
+            if (followUps.isNotEmpty)
+              pw.Column(
+                children: followUps.map((followUp) {
+                  return pw.Container(
+                    margin: pw.EdgeInsets.only(bottom: 15),
+                    padding: pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey400),
+                      borderRadius: pw.BorderRadius.circular(4),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          '2hr Fields - Date: ${followUp.date}',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 14,
+                            color: PdfColors.teal,
+                          ),
+                        ),
+                        pw.Divider(),
+
+                        // Table for 2-hour Fields
+                        pw.Table(
+                          columnWidths: {
+                            0: pw.FlexColumnWidth(1),
+                            1: pw.FlexColumnWidth(2),
+                          },
+                          border: pw.TableBorder(
+                            horizontalInside: pw.BorderSide(
+                              color: PdfColors.grey300,
+                              width: 0.5,
+                            ),
+                          ),
+                          children: [
+                            pw.TableRow(children: [
+                              pw.Text('Notes:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text(followUp.notes),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Temperature:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.temperature}°C'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Oxygen Saturation:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.oxygenSaturation}%'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Peep/Cap:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.peepCpap}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Ie Ratio:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fiO2}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Blood Pressure:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.bloodPressure}'),
+                            ]),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+
+            // Start new page for 4-hour Fields
+            pw.NewPage(),
+
+            // 4-hour Fields Section
+            if (followUps.isNotEmpty)
+              pw.Column(
+                children: followUps.map((followUp) {
+                  return pw.Container(
+                    margin: pw.EdgeInsets.only(bottom: 15),
+                    padding: pw.EdgeInsets.all(8),
+                    decoration: pw.BoxDecoration(
+                      border: pw.Border.all(color: PdfColors.grey400),
+                      borderRadius: pw.BorderRadius.circular(4),
+                    ),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        // Date for 4-hour fields
+                        pw.Text(
+                          '4hr Fields - Date: ${followUp.date}',
+                          style: pw.TextStyle(
+                            fontWeight: pw.FontWeight.bold,
+                            fontSize: 14,
+                            color: PdfColors.teal,
+                          ),
+                        ),
+                        pw.Divider(),
+
+                        // Table for 4-hour Fields
+                        pw.Table(
+                          columnWidths: {
+                            0: pw.FlexColumnWidth(1),
+                            1: pw.FlexColumnWidth(2),
+                          },
+                          border: pw.TableBorder(
+                            horizontalInside: pw.BorderSide(
+                              color: PdfColors.grey300,
+                              width: 0.5,
+                            ),
+                          ),
+                          children: [
+                            pw.TableRow(children: [
+                              pw.Text('4hr Temperature:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrTemperature}°C'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Blood Pressure:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrbloodPressure}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr IV Fluid:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrivFluid} ml'),
+                            ]),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              )
+            else
               pw.Text(
-                'Patient Follow-Up Report',
-                style:
-                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                'No follow-up records available.',
+                style: pw.TextStyle(fontSize: 14, color: PdfColors.red),
               ),
-              pw.SizedBox(height: 20),
-              pw.Text('Follow-Ups:'),
-              pw.SizedBox(height: 10),
-              pw.Table.fromTextArray(
-                headers: [
-                  'Date',
-                  'Notes',
-                  'Temperature',
-                  'oxygen',
-                  'bloodPressure',
-                  'four hr temperature'
-                ],
-                data: followUps
-                    .map((followUp) => [
-                          followUp.date,
-                          followUp.notes,
-                          followUp.temperature,
-                          followUp.oxygenSaturation,
-                          followUp.bloodPressure,
-                          followUp.fourhrTemperature,
-                          followUp.fourhrbloodPressure,
-                          followUp.fourhrivFluid,
-                        ])
-                    .toList(),
+
+            // Footer Section
+            pw.SizedBox(height: 40),
+            pw.Divider(thickness: 1),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                'Generated on ${DateFormat('dd/MM/yyyy, HH:mm').format(DateTime.now())}',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey),
               ),
-            ],
-          );
+            ),
+          ];
         },
       ),
     );
