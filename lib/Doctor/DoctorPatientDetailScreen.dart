@@ -20,6 +20,123 @@ class PatientDetailScreen4 extends StatefulWidget {
 }
 
 class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
+  final TextEditingController _prescriptionController = TextEditingController();
+  late Future<List<String>> _prescriptionsFuture;
+  @override
+  void initState() {
+    super.initState();
+    // Fetch initial prescriptions
+    _prescriptionsFuture =
+        _fetchPrescriptions(widget.patient.admissionRecords.first.id);
+  }
+
+  Future<void> _addPrescription(
+      String patientId, String admissionId, String prescription) async {
+    final url = Uri.parse('http://192.168.0.103:3000/doctors/addPresciption');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    final body = {
+      "patientId": patientId,
+      "admissionId": admissionId,
+      "prescription": prescription,
+    };
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(body),
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        // Prescription added successfully
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Prescription added successfully!')),
+        );
+
+        // Refresh the prescriptions
+        setState(() {
+          _prescriptionsFuture = _fetchPrescriptions(admissionId);
+        });
+      } else {
+        throw Exception('Failed to add prescription: ${response.body}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<List<String>> _fetchPrescriptions(String admissionId) async {
+    final url = Uri.parse(
+        'http://192.168.0.103:3000/doctors/getPrescriptions/$admissionId');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    print("the admiison is ${admissionId}");
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return List<String>.from(data.map((item) => item.toString()));
+      } else {
+        throw Exception('Failed to fetch prescriptions');
+      }
+    } catch (e) {
+      throw Exception('Error fetching prescriptions: $e');
+    }
+  }
+
+  void _openAddPrescriptionDialog(String patientId, String admissionId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Add Prescription'),
+          content: TextField(
+            controller: _prescriptionController,
+            decoration: InputDecoration(
+              labelText: 'Enter Prescription',
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final prescription = _prescriptionController.text;
+                if (prescription.isNotEmpty) {
+                  await _addPrescription(patientId, admissionId, prescription);
+                  _prescriptionController.clear();
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Prescription cannot be empty!')),
+                  );
+                }
+              },
+              child: Text('Submit'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> generatePdf(
       List<FollowUp> followUps, BuildContext context) async {
     final pdf = pw.Document();
@@ -427,6 +544,33 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                           Text('Date: ${record.admissionDate}',
                               style: const TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () => _openAddPrescriptionDialog(
+                                widget.patient.patientId, record.id),
+                            child: Text('Add Prescription'),
+                          ),
+                          FutureBuilder<List<String>>(
+                            future: _prescriptionsFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+                              final prescriptions = snapshot.data ?? [];
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: prescriptions.map((prescription) {
+                                  return Text(
+                                    '- $prescription',
+                                    style: const TextStyle(fontSize: 14),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
                           Text('Symptoms: ${record.symptoms}',
                               style: const TextStyle(fontSize: 16)),
                           Text('Initial Diagnosis: ${record.initialDiagnosis}',
@@ -512,28 +656,6 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          // ElevatedButton(
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: Colors.teal,
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(15.0),
-                          //     ),
-                          //   ),
-                          //   onPressed: () => _addFollowUp(
-                          //       widget.patient.patientId, record.id),
-                          //   child: const Text('Add Follow-Up'),
-                          // ),
-                          // ElevatedButton(
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: Colors.teal,
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(15.0),
-                          //     ),
-                          //   ),
-                          //   onPressed: () => _addFollowUp(
-                          //       widget.patient.patientId, record.id),
-                          //   child: const Text('Add 4hr Follow-Up'),
-                          // ),
                         ],
                       ),
                     ),
