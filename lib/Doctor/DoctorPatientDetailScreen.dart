@@ -120,7 +120,16 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
               onPressed: () async {
                 final prescription = _prescriptionController.text;
                 if (prescription.isNotEmpty) {
-                  await _addPrescription(patientId, admissionId, prescription);
+                  // Add current date and time
+                  final now = DateTime.now();
+                  final formattedDateTime =
+                      '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+                  final prescriptionWithDateTime =
+                      '$prescription $formattedDateTime';
+
+                  await _addPrescription(
+                      patientId, admissionId, prescriptionWithDateTime);
+
                   _prescriptionController.clear();
                   Navigator.pop(context);
                 } else {
@@ -363,7 +372,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -544,11 +553,11 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                           Text('Date: ${record.admissionDate}',
                               style: const TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () => _openAddPrescriptionDialog(
-                                widget.patient.patientId, record.id),
-                            child: Text('Add Prescription'),
-                          ),
+                          // ElevatedButton(
+                          //   onPressed: () => _openAddPrescriptionDialog(
+                          //       widget.patient.patientId, record.id),
+                          //   child: Text('Add Prescription'),
+                          // ),
                           FutureBuilder<List<String>>(
                             future: _prescriptionsFuture,
                             builder: (context, snapshot) {
@@ -564,7 +573,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: prescriptions.map((prescription) {
                                   return Text(
-                                    '- $prescription',
+                                    'Doctor Consultant- $prescription',
                                     style: const TextStyle(fontSize: 14),
                                   );
                                 }).toList(),
@@ -666,156 +675,169 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
           ),
         ),
       ),
-    );
-  }
-
-  @override
-  Widget _buildFollowUpTable(FollowUp followUp) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
-      ),
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Follow-Up Details',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 500),
-              child: DataTable(
-                columnSpacing: 20,
-                dataRowHeight: 60,
-                headingRowHeight: 40,
-                border: TableBorder.all(color: Colors.grey.shade300),
-                headingRowColor: MaterialStateProperty.all(Colors.black),
-                columns: const [
-                  DataColumn(
-                    label: Text(
-                      'Type',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text('Values',
-                        style: TextStyle(fontSize: 14, color: Colors.white)),
-                  ),
-                ],
-                rows: [
-                  // First row (Date) with custom color
-                  DataRow(
-                    color: MaterialStateProperty.resolveWith<Color>(
-                      (Set<MaterialState> states) {
-                        // Custom color for the first row (Date)
-                        return Colors.lightBlueAccent
-                            .withOpacity(0.2); // Teal color for 'Date' row
-                      },
-                    ),
-                    cells: [
-                      DataCell(
-                        Text(
-                          '2-Hour Follow Up',
-                          style: TextStyle(
-                            color: Colors.deepPurple,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          followUp.date,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  _buildTableRow(
-                      'Temperature', followUp.temperature.toString()),
-                  _buildTableRow('Pulse', followUp.pulse.toString()),
-                  _buildTableRow(
-                      'Respiration Rate', followUp.respirationRate.toString()),
-                  DataRow(
-                    color: MaterialStateProperty.resolveWith<Color>(
-                      (Set<MaterialState> states) {
-                        return Colors.lightBlueAccent
-                            .withOpacity(0.2); // Light blue row color
-                      },
-                    ),
-                    cells: [
-                      DataCell(
-                        Text(
-                          '4-Hour Follow-Up',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.deepPurple,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        Text(
-                          followUp.date,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  _buildTableRow(
-                      '4-Hr Temperature', followUp.fourhrTemperature),
-                  _buildTableRow(
-                      'Blood Pressure', followUp.fourhrbloodPressure),
-                  _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
+      floatingActionButton: Container(
+        margin: const EdgeInsets.only(
+            bottom: 20), // Moves the button up by 20 pixels
+        child: FloatingActionButton(
+          onPressed: () {
+            // Handle the action for adding a prescription
+            _openAddPrescriptionDialog(
+              widget.patient.patientId,
+              widget.patient.admissionRecords.first.id,
+            );
+          },
+          backgroundColor: Colors.teal,
+          elevation: 8, // Adds elevation to the button
+          child: const Icon(Icons.add, color: Colors.white),
         ),
       ),
     );
   }
+}
 
-  DataRow _buildTableRow(String label, String value) {
-    return DataRow(
-      cells: [
-        DataCell(
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+@override
+Widget _buildFollowUpTable(FollowUp followUp) {
+  return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15.0),
+    ),
+    elevation: 4,
+    margin: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Follow-Up Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-        ),
-        DataCell(
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Text(
-              value,
-              key: ValueKey(value),
-              style: const TextStyle(fontSize: 14),
+          const SizedBox(height: 8),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 500),
+            child: DataTable(
+              columnSpacing: 20,
+              dataRowHeight: 60,
+              headingRowHeight: 40,
+              border: TableBorder.all(color: Colors.grey.shade300),
+              headingRowColor: MaterialStateProperty.all(Colors.black),
+              columns: const [
+                DataColumn(
+                  label: Text(
+                    'Type',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text('Values',
+                      style: TextStyle(fontSize: 14, color: Colors.white)),
+                ),
+              ],
+              rows: [
+                // First row (Date) with custom color
+                DataRow(
+                  color: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                      // Custom color for the first row (Date)
+                      return Colors.lightBlueAccent
+                          .withOpacity(0.2); // Teal color for 'Date' row
+                    },
+                  ),
+                  cells: [
+                    DataCell(
+                      Text(
+                        '2-Hour Follow Up',
+                        style: TextStyle(
+                          color: Colors.deepPurple,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        followUp.date,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                _buildTableRow('Temperature', followUp.temperature.toString()),
+                _buildTableRow('Pulse', followUp.pulse.toString()),
+                _buildTableRow(
+                    'Respiration Rate', followUp.respirationRate.toString()),
+                DataRow(
+                  color: MaterialStateProperty.resolveWith<Color>(
+                    (Set<MaterialState> states) {
+                      return Colors.lightBlueAccent
+                          .withOpacity(0.2); // Light blue row color
+                    },
+                  ),
+                  cells: [
+                    DataCell(
+                      Text(
+                        '4-Hour Follow-Up',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        followUp.date,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                _buildTableRow('4-Hr Temperature', followUp.fourhrTemperature),
+                _buildTableRow('Blood Pressure', followUp.fourhrbloodPressure),
+                _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+              ],
             ),
           ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+}
+
+DataRow _buildTableRow(String label, String value) {
+  return DataRow(
+    cells: [
+      DataCell(
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
         ),
-      ],
-    );
-  }
+      ),
+      DataCell(
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            value,
+            key: ValueKey(value),
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
+      ),
+    ],
+  );
 }

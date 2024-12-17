@@ -22,7 +22,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -158,8 +158,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                   "urine": urineController.text,
                                 };
 
-                                final url = Uri.parse(
-                                    '${VERCEL_URL}/nurse/addFollowUp');
+                                final url =
+                                    Uri.parse('${BASE_URL}/nurse/addFollowUp');
 
                                 try {
                                   final response = await http.post(
@@ -377,6 +377,14 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               style: const TextStyle(fontSize: 16)),
                           Text('Initial Diagnosis: ${record.initialDiagnosis}',
                               style: const TextStyle(fontSize: 16)),
+                          Text(
+                            'Prescription:\n${record.doctorPrescrption.map((prescription) => '• $prescription').join('\n')}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal, // Adjust color as needed
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           FutureBuilder<List<FollowUp>>(
                             future: _fetchFollowUps(record.id),

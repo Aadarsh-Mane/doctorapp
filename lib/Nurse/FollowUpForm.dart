@@ -21,7 +21,7 @@ class _FollowUpFormState extends State<FollowUpForm> {
 
   Future<void> addFollowUp() async {
     final response = await http.post(
-      Uri.parse('http://${VERCEL_URL}/nurse/addFollowUp'),
+      Uri.parse('http://${BASE_URL}/nurse/addFollowUp'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

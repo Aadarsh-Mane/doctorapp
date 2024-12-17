@@ -298,14 +298,15 @@ class _AssignedPatientsScreenState
         patientId: patient.patientId,
         admissionId: admissionId,
       );
-
+      print("the admission id is ${admissionId}");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message']),
-          backgroundColor: result['success'] ? Colors.green : Colors.red,
-          duration: const Duration(seconds: 2),
+          content: Text(result['message'] ?? 'Unknown error occurred.'),
+          backgroundColor:
+              (result['success'] as bool? ?? false) ? Colors.green : Colors.red,
         ),
       );
+      ;
 
       ref.refresh(assignedPatientsProvider.notifier).fetchAssignedPatients();
     } catch (e) {
