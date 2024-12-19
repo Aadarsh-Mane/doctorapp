@@ -1,3 +1,4 @@
+import 'package:doctorapp/Doctor/DoctorPatientHistoryScreen.dart';
 import 'package:doctorapp/constants/Urls.dart';
 import 'package:flutter/material.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
@@ -372,7 +373,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${MAC_BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -665,6 +666,19 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                             },
                           ),
                           const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      PatientHistoryDetailsScreen(
+                                          patientId: widget.patient.patientId),
+                                ),
+                              );
+                            },
+                            child: Text('Cancel'),
+                          )
                         ],
                       ),
                     ),

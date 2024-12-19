@@ -34,8 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _checkServerConnection() async {
     try {
       // Change '192.168.1.5' to your computer's local IP address
-      final response =
-          await http.get(Uri.parse('https://ai-healthcare-plum.vercel.app'));
+      final response = await http.get(Uri.parse('http://192.168.0.104:3000'));
       if (response.statusCode == 200) {
         setState(() {
           _message = response.body; // Assuming the response is a simple string

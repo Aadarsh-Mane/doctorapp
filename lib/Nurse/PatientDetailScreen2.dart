@@ -22,7 +22,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${MAC_BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -158,8 +158,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                   "urine": urineController.text,
                                 };
 
-                                final url =
-                                    Uri.parse('${BASE_URL}/nurse/addFollowUp');
+                                final url = Uri.parse(
+                                    '${MAC_BASE_URL}/nurse/addFollowUp');
 
                                 try {
                                   final response = await http.post(

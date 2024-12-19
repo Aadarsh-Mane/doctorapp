@@ -108,7 +108,7 @@ class FollowUpsNotifier extends StateNotifier<List<FollowUp>> {
 
   Future<void> fetchFollowUps(String admissionId) async {
     try {
-      final url = '${BASE_URL}/nurse/followups/$admissionId';
+      final url = '${MAC_BASE_URL}/nurse/followups/$admissionId';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

@@ -36,7 +36,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
 
   Future<List<Doctor>> fetchDoctors() async {
     final response =
-        await http.get(Uri.parse('${BASE_URL}/reception/listDoctors'));
+        await http.get(Uri.parse('${MAC_BASE_URL}/reception/listDoctors'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -65,7 +65,7 @@ class _DoctorListScreenState extends State<DoctorListScreen> {
     String? token = prefs.getString('auth_token');
     print('Token from SharedPreferences: $token');
 
-    socket = IO.io('${BASE_URL}', <String, dynamic>{
+    socket = IO.io('${MAC_BASE_URL}', <String, dynamic>{
       'transports': ['websocket'],
       'extraHeaders': {'Authorization': 'Bearer $token'},
     });
@@ -163,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    socket = IO.io('${BASE_URL}', <String, dynamic>{
+    socket = IO.io('${MAC_BASE_URL}', <String, dynamic>{
       'transports': ['websocket'],
       'extraHeaders': {'Authorization': 'Bearer YOUR_JWT_TOKEN'},
     });
