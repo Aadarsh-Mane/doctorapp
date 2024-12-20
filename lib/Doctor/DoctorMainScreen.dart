@@ -87,7 +87,7 @@ class DoctorDrawer extends StatelessWidget {
                   child: CircleAvatar(
                     backgroundColor: Colors.black,
                     radius: 40,
-                    backgroundImage: AssetImage('assets/images/sk.png'),
+                    backgroundImage: AssetImage('assets/images/spanddd.jpeg'),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -110,37 +110,43 @@ class DoctorDrawer extends StatelessWidget {
                 _buildDrawerItem(
                   context,
                   Icons.assignment_turned_in_sharp,
-                  'Attendance',
-                  PatientListScreen(),
-                ),
-                _buildDrawerItem(
-                  context,
-                  Icons.assignment_turned_in_sharp,
-                  'Admitted Patients',
+                  'Assigned Labs',
                   AssignedLabsScreen(),
                 ),
                 _buildDrawerItem(
                   context,
                   Icons.assignment_turned_in_sharp,
-                  'Doctors',
+                  'Assigned Patients',
+                  AssignedPatientsScreen(),
+                ),
+                _buildDrawerItem(
+                  context,
+                  Icons.assignment_turned_in_sharp,
+                  'Admitted Patients',
                   AdmittedPatientsScreen(),
                 ),
-                _buildDrawerItem(
-                  context,
-                  Icons.notifications,
-                  'Notifications',
-                  const Scaffold(
-                    body: Center(child: Text('Notifications Screen')),
-                  ),
-                ),
-                _buildDrawerItem(
-                  context,
-                  Icons.report,
-                  'Reports',
-                  const Scaffold(
-                    body: Center(child: Text('Reports Screen')),
-                  ),
-                ),
+                // _buildDrawerItem(
+                //   context,
+                //   Icons.assignment_turned_in_sharp,
+                //   'Doctors',
+                //   AdmittedPatientsScreen(),
+                // ),
+                // _buildDrawerItem(
+                //   context,
+                //   Icons.notifications,
+                //   'Notifications',
+                //   const Scaffold(
+                //     body: Center(child: Text('Notifications Screen')),
+                //   ),
+                // ),
+                // _buildDrawerItem(
+                //   context,
+                //   Icons.report,
+                //   'Reports',
+                //   const Scaffold(
+                //     body: Center(child: Text('Reports Screen')),
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -443,7 +449,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<List<Doctor>> fetchDoctors() async {
     final response =
-        await http.get(Uri.parse('${MAC_BASE_URL}/reception/listDoctors'));
+        await http.get(Uri.parse('${VERCEL_URL}/reception/listDoctors'));
     print(response.body);
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);

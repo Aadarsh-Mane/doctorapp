@@ -36,43 +36,23 @@ class _AssignedPatientsScreenState
     final assignedPatients = ref.watch(assignedPatientsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.deepPurpleAccent,
-        title: const Text('Assigned Patients',
-            style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () {
-              ref
-                  .refresh(assignedPatientsProvider.notifier)
-                  .fetchAdmittedPatients();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.assignment, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AssignedLabsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      backgroundColor: Colors.white, // Light background for the entire list
       body: assignedPatients.when(
         data: (patients) => ListView.builder(
           itemCount: patients.length,
           itemBuilder: (context, index) {
             final patient = patients[index];
+            final admissionStatus = patient.admissionRecords.isNotEmpty
+                ? patient.admissionRecords.first.status
+                : 'Pending';
+
+            // Set status color based on the admission status
+            Color statusColor =
+                admissionStatus == 'admitted' ? Colors.green : Colors.red;
+
             return Dismissible(
               key: Key(patient.id),
-              direction: DismissDirection.endToStart,
+              direction: DismissDirection.startToEnd,
               onDismissed: (direction) async {
                 bool? shouldDischarge =
                     await _showDischargeConfirmationDialog(context);
@@ -106,32 +86,76 @@ class _AssignedPatientsScreenState
                 ),
               ),
               child: Card(
-                elevation: 4.0,
+                color: Colors.black, // Black background for the card
+                elevation: 8.0, // Add shadow for the card
                 margin:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
+                  side: const BorderSide(
+                    color: Colors.cyan, // Cyan border for the card
+                    width: 2.0,
+                  ),
                 ),
                 child: ListTile(
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  leading: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.cyan, // Cyan background for avatar
+                    child: Text(
+                      patient.name[0].toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black, // Black text inside the avatar
+                      ),
+                    ),
+                  ),
                   title: Text(
                     patient.name,
-                    style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.cyan, // Cyan color for the title
+                    ),
                   ),
-                  subtitle: Text(
-                    'Age: ${patient.age}, Gender: ${patient.gender}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Age: ${patient.age}, Gender: ${patient.gender}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.cyan, // Cyan color for the subtitle
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Status: $admissionStatus',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: statusColor, // Status-specific color
+                        ),
+                      ),
+                    ],
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.assignment_late,
-                        color: Colors.deepPurple),
-                    onPressed: () async {
-                      await _handleAssignLab(context, patient, ref);
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.assignment_late,
+                          color: Colors.cyan,
+                          size: 28, // Larger icon size
+                        ),
+                        onPressed: () async {
+                          await _handleAssignLab(context, patient, ref);
+                        },
+                      ),
+                      // Second Icon (Admit Patient)
+                    ],
                   ),
                   onTap: () {
                     Navigator.push(
@@ -149,8 +173,19 @@ class _AssignedPatientsScreenState
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(
-          child: Text('Error: $error', style: TextStyle(color: Colors.red)),
+          child: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
+          ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Trigger the refresh when the button is pressed
+          ref.refresh(assignedPatientsProvider);
+        },
+        child: const Icon(Icons.refresh),
+        backgroundColor: Colors.cyan, // Cyan background for the button
       ),
     );
   }

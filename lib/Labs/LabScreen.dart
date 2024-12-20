@@ -101,7 +101,7 @@
 //     }
 
 //     var request = http.MultipartRequest(
-//         'POST', Uri.parse('http://192.168.0.103:3000/labs/upload-lab-report'));
+//         'POST', Uri.parse('${VERCEL_URL}/labs/upload-lab-report'));
 //     request.fields['admissionId'] = widget.admissionId;
 //     request.fields['patientId'] = widget.patientId;
 //     request.fields['labTestName'] = labTestName!;

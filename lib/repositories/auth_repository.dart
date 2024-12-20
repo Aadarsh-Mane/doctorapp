@@ -13,7 +13,7 @@ class AuthRepository {
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('${MAC_BASE_URL}/users/signin'),
+        Uri.parse('${VERCEL_URL}/users/signin'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -48,7 +48,7 @@ class AuthRepository {
   Future<String?> loginNurse(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('${MAC_BASE_URL}/nurse/signin'), // Different URL for nurse
+        Uri.parse('${VERCEL_URL}/nurse/signin'), // Different URL for nurse
         headers: {
           'Content-Type': 'application/json',
         },
@@ -124,7 +124,7 @@ class AuthRepository {
 
     try {
       final response = await http.get(
-        Uri.parse('${MAC_BASE_URL}/doctors/getAssignedPatients'),
+        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -154,7 +154,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${MAC_BASE_URL}/doctors/getDoctorProfile'),
+        Uri.parse('${VERCEL_URL}/doctors/getDoctorProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -183,7 +183,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${MAC_BASE_URL}/nurse/nurseProfile'),
+        Uri.parse('${VERCEL_URL}/nurse/nurseProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -213,7 +213,7 @@ class AuthRepository {
   Future<List<Patient1>> fetchPatients() async {
     try {
       final response =
-          await http.get(Uri.parse('${MAC_BASE_URL}/reception/listPatients'));
+          await http.get(Uri.parse('${VERCEL_URL}/reception/listPatients'));
       print(response.body);
 
       if (response.statusCode == 200) {
@@ -241,7 +241,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('${MAC_BASE_URL}/doctors/getAssignedPatients'),
+        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -274,7 +274,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('${MAC_BASE_URL}/doctors/getAdmittedPatient'),
+        Uri.parse('${VERCEL_URL}/doctors/getAdmittedPatient'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -303,7 +303,7 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final response = await http.post(
-      Uri.parse('$MAC_BASE_URL/doctors/admitPatient'),
+      Uri.parse('$VERCEL_URL/doctors/admitPatient'),
       body: {
         'patientId': patientId,
         'admissionId': admissionId,
@@ -320,7 +320,7 @@ class AuthRepository {
     required String labTestNameGivenByDoctor,
   }) async {
     final token = await getToken(); // Retrieve the token from storage
-    final url = Uri.parse('${MAC_BASE_URL}/doctors/assignPatient');
+    final url = Uri.parse('${VERCEL_URL}/doctors/assignPatient');
 
     try {
       final response = await http.post(
@@ -362,18 +362,39 @@ class AuthRepository {
     if (token == null) {
       throw Exception('Token not found in SharedPreferences');
     }
+    print("Token: $token");
+
     final response = await http.get(
-      Uri.parse('${MAC_BASE_URL}/doctors/getDoctorAssignedPatient'),
+      Uri.parse('${VERCEL_URL}/doctors/getDoctorAssignedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
       },
     );
-    // print(response.body);
+
+    // Print response body for debugging
+    print("Response Body: ${response.body}");
+
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body)['labReports']
-          as List; // Extract the "labReports" key
-      return data.map((json) => AssignedLab.fromJson(json)).toList();
+      try {
+        final data = jsonDecode(response.body);
+        if (data.containsKey('labReports') && data['labReports'] != null) {
+          final labReports = data['labReports'] as List;
+          if (labReports.isEmpty) {
+            print("No patients assigned.");
+          }
+          return labReports.map((json) => AssignedLab.fromJson(json)).toList();
+        } else {
+          print("Error: 'labReports' key is missing in the response.");
+          return [];
+        }
+      } catch (e) {
+        print("Error parsing response: $e");
+        throw Exception('Failed to parse assigned labs');
+      }
     } else {
+      print(
+          "Error: Failed to load assigned labs. Status code: ${response.statusCode}");
       throw Exception('Failed to load assigned labs');
     }
   }
@@ -385,7 +406,7 @@ class AuthRepository {
     final token = await getToken(); // Retrieve the token from storage
 
     final response = await http.post(
-      Uri.parse('${MAC_BASE_URL}/doctors/dischargePatient'),
+      Uri.parse('${VERCEL_URL}/doctors/dischargePatient'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -403,7 +424,7 @@ class AuthRepository {
     final token = await getToken(); // Retrieve the token from storage
 
     final response = await http.post(
-      Uri.parse('${MAC_BASE_URL}/storeFcmToken'),
+      Uri.parse('${VERCEL_URL}/storeFcmToken'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -424,7 +445,7 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final response = await http.get(
-      Uri.parse('${MAC_BASE_URL}/doctors/getadmittedPatient'),
+      Uri.parse('${VERCEL_URL}/doctors/getadmittedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -453,7 +474,7 @@ class AuthRepository {
       throw Exception('No authentication token found.');
     }
     final response = await http.post(
-      Uri.parse('http://192.168.0.103:3000/doctors/admitPatient'),
+      Uri.parse('${VERCEL_URL}/doctors/admitPatient'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token'

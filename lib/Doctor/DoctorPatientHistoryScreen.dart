@@ -1,3 +1,4 @@
+import 'package:doctorapp/constants/Urls.dart';
 import 'package:doctorapp/models/getPatientHistoryModel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,8 +18,8 @@ import 'package:pdf/pdf.dart';
 
 // Fetch Patient History Function
 Future<PatientHistory> fetchPatientHistory(String patientId) async {
-  final response = await http
-      .get(Uri.parse('http://192.168.0.103:3000/patientHistory/$patientId'));
+  final response =
+      await http.get(Uri.parse('${VERCEL_URL}/patientHistory/$patientId'));
 
   if (response.statusCode == 200) {
     return PatientHistory.fromJson(jsonDecode(response.body));

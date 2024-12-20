@@ -38,13 +38,13 @@ class _SplashScreenState extends State<SplashScreen> {
       _opacityPoweredBy = 1.0;
     });
 
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 0));
     setState(() {
       _opacityCompanyLogo = 1.0;
     });
 
     // After the animation, navigate to the next screen
-    await Future.delayed(Duration(seconds: 2)); // Wait a bit before navigating
+    await Future.delayed(Duration(seconds: 1)); // Wait a bit before navigating
     _navigateToNextScreen();
   }
 
@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   opacity: _opacityHospital,
                   duration: Duration(seconds: 1),
                   child: Image.asset(
-                    'assets/images/spp.png', // Replace with your logo path
+                    'assets/images/spanddd.jpeg', // Replace with your logo path
                     height: 150,
                   ),
                 ),

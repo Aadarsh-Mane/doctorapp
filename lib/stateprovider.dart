@@ -15,13 +15,20 @@ class AssignedLabsNotifier extends StateNotifier<List<AssignedLab>> {
 
   AssignedLabsNotifier(this.authRepository) : super([]);
 
-  // Fetch the assigned labs from the API
-  Future<void> fetchAssignedLabs() async {
+  bool _isLoading = false; // To prevent continuous API calls
+
+  Future<void> fetchAssignedLabs({bool forceRefresh = false}) async {
+    if (_isLoading) return; // Prevent overlapping API calls
+    if (!forceRefresh && state.isNotEmpty) return; // Avoid unnecessary refresh
+
+    _isLoading = true;
     try {
       final labs = await authRepository.getAssignedLabs();
-      state = labs; // Update the state with fetched data
+      state = labs;
     } catch (e) {
-      throw Exception('Failed to fetch assigned labs: $e');
+      print("Error fetching assigned labs: $e");
+    } finally {
+      _isLoading = false;
     }
   }
 }
@@ -71,8 +78,8 @@ class LabPatientsNotifier extends StateNotifier<List<LabPatient>> {
   LabPatientsNotifier() : super([]);
 
   Future<void> fetchLabPatients() async {
-    final response = await http
-        .get(Uri.parse('http://192.168.0.103:3000/labs/getlabPatients'));
+    final response =
+        await http.get(Uri.parse('${VERCEL_URL}/labs/getlabPatients'));
     print(response.body);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -108,7 +115,7 @@ class FollowUpsNotifier extends StateNotifier<List<FollowUp>> {
 
   Future<void> fetchFollowUps(String admissionId) async {
     try {
-      final url = '${MAC_BASE_URL}/nurse/followups/$admissionId';
+      final url = '${VERCEL_URL}/nurse/followups/$admissionId';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {

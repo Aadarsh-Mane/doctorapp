@@ -80,13 +80,13 @@ class PatientListScreen extends ConsumerWidget {
                                   color: Colors.black54,
                                 ),
                               ),
-                              Text(
-                                'Record: ${patient.admissionRecords}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black54,
-                                ),
-                              ),
+                              // Text(
+                              //   'Record: ${patient.admissionRecords}',
+                              //   style: const TextStyle(
+                              //     fontSize: 14,
+                              //     color: Colors.black54,
+                              //   ),
+                              // ),
                             ],
                           ),
                         ),

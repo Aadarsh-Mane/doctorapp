@@ -70,7 +70,7 @@ class NurseDrawer extends StatelessWidget {
                     backgroundColor: Colors.transparent,
                     radius: 40,
                     backgroundImage: AssetImage(
-                        'assets/images/sk.png'), // Adjusted image size
+                        'assets/images/spanddd.jpeg'), // Adjusted image size
                   ),
                 ),
                 const SizedBox(height: 10),

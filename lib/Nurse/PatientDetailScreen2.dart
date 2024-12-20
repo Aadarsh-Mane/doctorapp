@@ -17,12 +17,44 @@ class PatientDetailScreen2 extends StatefulWidget {
 }
 
 class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
+  late Future<List<String>> _prescriptionsFuture;
+  @override
+  void initState() {
+    super.initState();
+    // Fetch initial prescriptions
+    _prescriptionsFuture =
+        _fetchPrescriptions(widget.patient.admissionRecords.first.id);
+  }
+
+  Future<List<String>> _fetchPrescriptions(String admissionId) async {
+    final url =
+        Uri.parse('${VERCEL_URL}/doctors/getPrescriptions/$admissionId');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    print("the admiison is ${admissionId}");
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return List<String>.from(data.map((item) => item.toString()));
+      } else {
+        throw Exception('Failed to fetch prescriptions');
+      }
+    } catch (e) {
+      throw Exception('Error fetching prescriptions: $e');
+    }
+  }
+
   Future<List<FollowUp>> _fetchFollowUps(String admissionId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${MAC_BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -62,6 +94,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     TextEditingController pipController = TextEditingController();
     TextEditingController peepController = TextEditingController();
     TextEditingController ieRatioController = TextEditingController();
+    // Create controllers for each field
 
     await showDialog(
       context: context,
@@ -122,6 +155,15 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                         _buildTextField(
                             ivFluidController, 'Intravenous Fluids'),
                         _buildTextField(urineController, 'Urinary Output'),
+                        _buildTextField(
+                            nasogastricController, 'Nasogastric Tube'),
+                        _buildNumberInputField(
+                            rtFeedOralController, 'RT Feed Oral'),
+                        _buildNumberInputField(cvpController, 'CVP'),
+                        _buildNumberInputField(fiO2Controller, 'FiO2'),
+                        _buildNumberInputField(pipController, 'PIP'),
+                        _buildNumberInputField(peepController, 'PEEP'),
+                        _buildNumberInputField(ieRatioController, 'IE Ratio'),
 
                         // Action Buttons
                         SizedBox(height: 20),
@@ -156,10 +198,196 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                       0,
                                   "ivFluid": ivFluidController.text,
                                   "urine": urineController.text,
+                                  "nasogastric": nasogastricController.text,
+                                  "rtFeedOral": rtFeedOralController.text,
+                                  "cvp": cvpController.text,
+                                  "fiO2": fiO2Controller.text,
+                                  "pip": pipController.text,
+                                  "peep": peepController.text,
+                                  "ieRatio": ieRatioController.text,
                                 };
 
                                 final url = Uri.parse(
-                                    '${MAC_BASE_URL}/nurse/addFollowUp');
+                                    '${VERCEL_URL}/nurse/addFollowUp');
+
+                                try {
+                                  final response = await http.post(
+                                    url,
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': 'Bearer $token',
+                                    },
+                                    body: json.encode(body),
+                                  );
+
+                                  if (response.statusCode == 201) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Follow-up added successfully!')),
+                                    );
+                                    setState(() {}); // Refresh UI
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('Failed to add follow-up!')),
+                                    );
+                                  }
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: $e')),
+                                  );
+                                }
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.greenAccent,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Submit',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _add4FollowUp(String patientId, String admissionId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+
+    // Add controllers for new fields
+    TextEditingController notesController = TextEditingController();
+    TextEditingController observationsController = TextEditingController();
+    // Create controllers for each field
+    TextEditingController fourHrPulseController = TextEditingController();
+    TextEditingController fourHrBloodPressureController =
+        TextEditingController();
+    TextEditingController fourHrOxygenSaturationController =
+        TextEditingController();
+    TextEditingController fourHrTemperatureController = TextEditingController();
+    TextEditingController fourHrBloodSugarLevelController =
+        TextEditingController();
+    TextEditingController fourHrOtherVitalsController = TextEditingController();
+    TextEditingController fourHrIvFluidController = TextEditingController();
+    TextEditingController fourHrUrineController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width *
+                0.9, // Set width to 90% of the screen
+            constraints: BoxConstraints(
+              maxHeight:
+                  MediaQuery.of(context).size.height * 0.8, // Limit height
+            ),
+            child: SingleChildScrollView(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Section Heading
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: Text(
+                            'Patient Follow-Up Information',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        // Grouping the related fields
+                        _buildSectionTitle('Vitals'),
+
+                        // Grouping observations and notes
+                        _buildSectionTitle('Observations'),
+                        _buildTextField(notesController, 'Notes'),
+                        _buildTextField(observationsController, 'Observations'),
+
+                        // IV fluid and Urine output
+                        _buildSectionTitle('Other Information'),
+
+                        _buildNumberInputField(
+                            fourHrPulseController, '4hr Pulse'),
+                        _buildNumberInputField(fourHrBloodPressureController,
+                            '4hr Blood Pressure'),
+                        _buildNumberInputField(fourHrOxygenSaturationController,
+                            '4hr Oxygen Saturation'),
+                        _buildNumberInputField(
+                            fourHrTemperatureController, '4hr Temperature'),
+                        _buildNumberInputField(fourHrBloodSugarLevelController,
+                            '4hr Blood Sugar Level'),
+                        _buildTextField(
+                            fourHrOtherVitalsController, '4hr Other Vitals'),
+                        _buildTextField(
+                            fourHrIvFluidController, '4hr IV Fluid'),
+                        _buildNumberInputField(
+                            fourHrUrineController, '4hr Urine'),
+                        // Action Buttons
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.redAccent),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final body = {
+                                  "patientId": patientId,
+                                  "admissionId": admissionId,
+                                  "notes": notesController.text,
+                                  "observations": observationsController.text,
+                                  "fourHrPulse": fourHrPulseController.text,
+                                  "fourHrBloodPressure":
+                                      fourHrBloodPressureController.text,
+                                  "fourHrOxygenSaturation":
+                                      fourHrOxygenSaturationController.text,
+                                  "fourHrTemperature":
+                                      fourHrTemperatureController.text,
+                                  "fourHrBloodSugarLevel":
+                                      fourHrBloodSugarLevelController.text,
+                                  "fourHrOtherVitals":
+                                      fourHrOtherVitalsController.text,
+                                  "fourHrIvFluid": fourHrIvFluidController.text,
+                                  "fourHrUrine": fourHrUrineController.text,
+                                };
+
+                                final url = Uri.parse(
+                                    '${VERCEL_URL}/nurse/addFollowUp');
 
                                 try {
                                   final response = await http.post(
@@ -288,6 +516,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
               setState(() {
                 // Trigger a refresh of follow-ups
                 _fetchFollowUps(widget.patient.admissionRecords.first.id);
+                _prescriptionsFuture = _fetchPrescriptions(
+                    widget.patient.admissionRecords.first.id);
               });
             },
           ),
@@ -298,6 +528,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
           setState(() {
             // Trigger a refresh of follow-ups
             _fetchFollowUps(widget.patient.admissionRecords.first.id);
+            _fetchPrescriptions(widget.patient.admissionRecords.first.id);
           });
         },
         child: SingleChildScrollView(
@@ -377,13 +608,89 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               style: const TextStyle(fontSize: 16)),
                           Text('Initial Diagnosis: ${record.initialDiagnosis}',
                               style: const TextStyle(fontSize: 16)),
-                          Text(
-                            'Prescription:\n${record.doctorPrescrption.map((prescription) => '• $prescription').join('\n')}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.teal, // Adjust color as needed
-                            ),
+                          FutureBuilder<List<String>>(
+                            future: _prescriptionsFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 16.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                              if (snapshot.hasError) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'Error loading prescriptions: ${snapshot.error}',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              final prescriptions = snapshot.data ?? [];
+                              if (prescriptions.isEmpty) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'No prescriptions available.',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: prescriptions.map((prescription) {
+                                  return Container(
+                                    foregroundDecoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Colors.black,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Card(
+                                      margin: const EdgeInsets.symmetric(
+                                          vertical: 6.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                      ),
+                                      elevation: 2,
+                                      child: ListTile(
+                                        leading: Icon(
+                                          Icons.medical_services_outlined,
+                                          color: Colors.teal[600],
+                                          size: 28,
+                                        ),
+                                        title: Text(
+                                          'Consultant: $prescription',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            },
                           ),
                           const SizedBox(height: 8),
                           FutureBuilder<List<FollowUp>>(
@@ -466,28 +773,28 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                            ),
-                            onPressed: () => _addFollowUp(
-                                widget.patient.patientId, record.id),
-                            child: const Text('Add Follow-Up'),
-                          ),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.teal,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                              ),
-                            ),
-                            onPressed: () => _addFollowUp(
-                                widget.patient.patientId, record.id),
-                            child: const Text('Add 4hr Follow-Up'),
-                          ),
+                          // ElevatedButton(
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: Colors.teal,
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(15.0),
+                          //     ),
+                          //   ),
+                          //   onPressed: () => _addFollowUp(
+                          //       widget.patient.patientId, record.id),
+                          //   child: const Text('Add Follow-Up'),
+                          // ),
+                          // ElevatedButton(
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: Colors.teal,
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(15.0),
+                          //     ),
+                          //   ),
+                          //   onPressed: () => _add4FollowUp(
+                          //       widget.patient.patientId, record.id),
+                          //   child: const Text('Add 4hr Follow-Up'),
+                          // ),
                         ],
                       ),
                     ),
@@ -497,6 +804,80 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: Stack(
+        children: <Widget>[
+          // First Floating Action Button with Label
+          Positioned(
+            bottom: 10, // Moves the button up by 20 pixels
+            right: 20, // Adjusts the button's position from the right
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    // Handle the action for adding a prescription
+                    _addFollowUp(
+                      widget.patient.patientId,
+                      widget.patient.admissionRecords.first.id,
+                    );
+                  },
+                  backgroundColor: Colors.teal,
+                  elevation: 10, // Increased elevation for better shadow effect
+                  child: const Icon(Icons.add,
+                      color: Colors.white, size: 30), // Larger icon
+                ),
+                const SizedBox(
+                    height: 10), // Increased space between button and label
+                const Text(
+                  '2hr Follow-Up',
+                  style: TextStyle(
+                    color: Colors.teal,
+                    fontSize:
+                        14, // Slightly bigger font size for better readability
+                    fontWeight: FontWeight.bold, // Bold label text for emphasis
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Second Floating Action Button with Label
+          Positioned(
+            bottom: 100, // Moves the second button further up
+            right: 20, // Adjusts the button's position from the right
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FloatingActionButton(
+                  onPressed: () {
+                    // Handle the action for t
+                    //he second button
+                    _add4FollowUp(
+                      widget.patient.patientId,
+                      widget.patient.admissionRecords.first.id,
+                    );
+                    print("Second button clicked");
+                  },
+                  backgroundColor: Colors.black, // Color of the second button
+                  elevation: 10, // Increased elevation for better shadow effect
+                  child: const Icon(Icons.edit,
+                      color: Colors.cyan, size: 30), // Larger icon
+                ),
+                const SizedBox(
+                    height: 8), // Increased space between button and label
+                const Text(
+                  '4 hr Follow-Up',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize:
+                        14, // Slightly bigger font size for better readability
+                    fontWeight: FontWeight.bold, // Bold label text for emphasis
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -582,6 +963,34 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                   _buildTableRow('Pulse', followUp.pulse.toString()),
                   _buildTableRow(
                       'Respiration Rate', followUp.respirationRate.toString()),
+                  _buildTableRow(
+                      'Temperature', followUp.temperature.toString()),
+                  _buildTableRow('Pulse', followUp.pulse.toString()),
+                  _buildTableRow(
+                      'Respiration Rate', followUp.respirationRate.toString()),
+                  _buildTableRow('Blood Pressure', followUp.bloodPressure),
+                  _buildTableRow('Oxygen Saturation',
+                      followUp.oxygenSaturation.toString()),
+                  _buildTableRow(
+                      'Blood Sugar Level', followUp.bloodSugarLevel.toString()),
+                  _buildTableRow('Other Vitals', followUp.otherVitals),
+                  _buildTableRow('IV Fluid', followUp.ivFluid),
+                  _buildTableRow('Nasogastric', followUp.nasogastric),
+                  _buildTableRow('RT Feed Oral', followUp.rtFeedOral),
+                  _buildTableRow('Total Intake', followUp.totalIntake),
+                  _buildTableRow('CVP', followUp.cvp),
+                  _buildTableRow('Urine Output', followUp.urine),
+                  _buildTableRow('Stool', followUp.stool),
+                  _buildTableRow('RT Aspirate', followUp.rtAspirate),
+                  _buildTableRow('Other Output', followUp.otherOutput),
+                  _buildTableRow('Ventilator Mode', followUp.ventyMode),
+                  _buildTableRow('Set Rate', followUp.setRate.toString()),
+                  _buildTableRow('FiO2', followUp.fiO2.toString()),
+                  _buildTableRow('PIP', followUp.pip.toString()),
+                  _buildTableRow('PEEP/CPAP', followUp.peepCpap),
+                  _buildTableRow('IE Ratio', followUp.ieRatio),
+                  _buildTableRow('Other Ventilator', followUp.otherVentilator),
+
                   DataRow(
                     color: MaterialStateProperty.resolveWith<Color>(
                       (Set<MaterialState> states) {
@@ -618,6 +1027,17 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                   _buildTableRow(
                       'Blood Pressure', followUp.fourhrbloodPressure),
                   _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                  _buildTableRow('4-Hr Pulse', followUp.fourhrpulse),
+                  _buildTableRow(
+                      'Oxygen Saturation', followUp.fourhroxygenSaturation),
+                  _buildTableRow(
+                      '4-Hr Temperature', followUp.fourhrTemperature),
+                  _buildTableRow(
+                      'Blood Pressure', followUp.fourhrbloodPressure),
+                  _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                  _buildTableRow('Other Vitals', followUp.fourhrotherVitals),
+                  _buildTableRow('IV Fluid', followUp.fourhrivFluid),
+                  _buildTableRow('Urine Output', followUp.fourhrurine),
                 ],
               ),
             ),

@@ -51,6 +51,7 @@ dependencies:
   open_file: ^3.5.10
   printing: ^5.13.4
   flutter_expandable_fab: ^2.3.0
+  circular_menu: ^4.0.0
 
 dev_dependencies:
   flutter_test:

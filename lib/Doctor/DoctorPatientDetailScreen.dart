@@ -33,7 +33,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
 
   Future<void> _addPrescription(
       String patientId, String admissionId, String prescription) async {
-    final url = Uri.parse('http://192.168.0.103:3000/doctors/addPresciption');
+    final url = Uri.parse('${VERCEL_URL}/doctors/addPresciption');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -74,8 +74,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
   }
 
   Future<List<String>> _fetchPrescriptions(String admissionId) async {
-    final url = Uri.parse(
-        'http://192.168.0.103:3000/doctors/getPrescriptions/$admissionId');
+    final url =
+        Uri.parse('${VERCEL_URL}/doctors/getPrescriptions/$admissionId');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     print("the admiison is ${admissionId}");
@@ -267,6 +267,120 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                                       fontWeight: pw.FontWeight.bold)),
                               pw.Text('${followUp.bloodPressure}'),
                             ]),
+                            pw.TableRow(children: [
+                              pw.Text('Oxygen Saturation:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.oxygenSaturation} %'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Blood Sugar Level:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.bloodSugarLevel} mg/dL'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Other Vitals:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.otherVitals}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('IV Fluid:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.ivFluid} ml'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Nasogastric:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.nasogastric}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('RT Feed/Oral:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.rtFeedOral}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Total Intake:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.totalIntake} ml'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('CVP:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.cvp} mmHg'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Urine:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.urine} ml'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Stool:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.stool}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('RT Aspirate:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.rtAspirate}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Other Output:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.otherOutput}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Ventilator Mode:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.ventyMode}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Set Rate:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.setRate} bpm'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('FiO2:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fiO2} %'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('PIP:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.pip} cmH2O'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('PEEP/CPAP:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.peepCpap} cmH2O'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('IE Ratio:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.ieRatio}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('Other Ventilator Info:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.otherVentilator}'),
+                            ]),
                           ],
                         ),
                       ],
@@ -334,6 +448,43 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                                       fontWeight: pw.FontWeight.bold)),
                               pw.Text('${followUp.fourhrivFluid} ml'),
                             ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Pulse:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrpulse} bpm'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Oxygen Saturation:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhroxygenSaturation} %'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Blood Sugar Level:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text(
+                                  '${followUp.fourhrbloodSugarLevel} mg/dL'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Other Vitals:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrotherVitals}'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr Urine:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrurine} ml'),
+                            ]),
+                            pw.TableRow(children: [
+                              pw.Text('4hr IV Fluid:',
+                                  style: pw.TextStyle(
+                                      fontWeight: pw.FontWeight.bold)),
+                              pw.Text('${followUp.fourhrivFluid} ml'),
+                            ]),
                           ],
                         ),
                       ],
@@ -373,7 +524,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${MAC_BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -464,14 +615,6 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
               });
             },
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final followUps = await _fetchFollowUps(
-                  widget.patient.admissionRecords.first.id);
-              generatePdf(followUps, context);
-            },
-            child: const Text('Generate PDF'),
-          )
         ],
       ),
       body: RefreshIndicator(
@@ -524,6 +667,34 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                                 style: const TextStyle(fontSize: 16)),
                             Text('Address: ${widget.patient.address}',
                                 style: const TextStyle(fontSize: 16)),
+                            ElevatedButton.icon(
+                              onPressed: () async {
+                                final followUps = await _fetchFollowUps(
+                                  widget.patient.admissionRecords.first.id,
+                                );
+                                generatePdf(followUps, context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.teal,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 12, horizontal: 16),
+                              ),
+                              icon: const Icon(
+                                Icons.picture_as_pdf,
+                                size: 18,
+                              ),
+                              label: const Text(
+                                'Generate PDF',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -554,6 +725,10 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                           Text('Date: ${record.admissionDate}',
                               style: const TextStyle(fontSize: 16)),
                           const SizedBox(height: 8),
+                          Text('Symptoms: ${record.symptoms}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Initial Diagnosis: ${record.initialDiagnosis}',
+                              style: const TextStyle(fontSize: 16)),
                           // ElevatedButton(
                           //   onPressed: () => _openAddPrescriptionDialog(
                           //       widget.patient.patientId, record.id),
@@ -564,27 +739,75 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
+                                return const Center(
+                                  child: Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 16.0),
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
                               }
                               if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'Error loading prescriptions: ${snapshot.error}',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                );
                               }
+
                               final prescriptions = snapshot.data ?? [];
+                              if (prescriptions.isEmpty) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Text(
+                                    'No prescriptions available.',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                );
+                              }
+
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: prescriptions.map((prescription) {
-                                  return Text(
-                                    'Doctor Consultant- $prescription',
-                                    style: const TextStyle(fontSize: 14),
+                                  return Card(
+                                    margin: const EdgeInsets.symmetric(
+                                        vertical: 6.0),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    elevation: 2,
+                                    child: ListTile(
+                                      leading: Icon(
+                                        Icons.medical_services_outlined,
+                                        color: Colors.teal[600],
+                                        size: 28,
+                                      ),
+                                      title: Text(
+                                        'Consultant: $prescription',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
                                   );
                                 }).toList(),
                               );
                             },
                           ),
-                          Text('Symptoms: ${record.symptoms}',
-                              style: const TextStyle(fontSize: 16)),
-                          Text('Initial Diagnosis: ${record.initialDiagnosis}',
-                              style: const TextStyle(fontSize: 16)),
+
                           const SizedBox(height: 8),
                           FutureBuilder<List<FollowUp>>(
                             future: _fetchFollowUps(record.id),
@@ -789,6 +1012,34 @@ Widget _buildFollowUpTable(FollowUp followUp) {
                 _buildTableRow('Pulse', followUp.pulse.toString()),
                 _buildTableRow(
                     'Respiration Rate', followUp.respirationRate.toString()),
+                _buildTableRow(
+                    'Respiration Rate', followUp.respirationRate.toString()),
+                _buildTableRow('Temperature', followUp.temperature.toString()),
+                _buildTableRow('Pulse', followUp.pulse.toString()),
+                _buildTableRow(
+                    'Respiration Rate', followUp.respirationRate.toString()),
+                _buildTableRow('Blood Pressure', followUp.bloodPressure),
+                _buildTableRow(
+                    'Oxygen Saturation', followUp.oxygenSaturation.toString()),
+                _buildTableRow(
+                    'Blood Sugar Level', followUp.bloodSugarLevel.toString()),
+                _buildTableRow('Other Vitals', followUp.otherVitals),
+                _buildTableRow('IV Fluid', followUp.ivFluid),
+                _buildTableRow('Nasogastric', followUp.nasogastric),
+                _buildTableRow('RT Feed Oral', followUp.rtFeedOral),
+                _buildTableRow('Total Intake', followUp.totalIntake),
+                _buildTableRow('CVP', followUp.cvp),
+                _buildTableRow('Urine Output', followUp.urine),
+                _buildTableRow('Stool', followUp.stool),
+                _buildTableRow('RT Aspirate', followUp.rtAspirate),
+                _buildTableRow('Other Output', followUp.otherOutput),
+                _buildTableRow('Ventilator Mode', followUp.ventyMode),
+                _buildTableRow('Set Rate', followUp.setRate.toString()),
+                _buildTableRow('FiO2', followUp.fiO2.toString()),
+                _buildTableRow('PIP', followUp.pip.toString()),
+                _buildTableRow('PEEP/CPAP', followUp.peepCpap),
+                _buildTableRow('IE Ratio', followUp.ieRatio),
+                _buildTableRow('Other Ventilator', followUp.otherVentilator),
                 DataRow(
                   color: MaterialStateProperty.resolveWith<Color>(
                     (Set<MaterialState> states) {
@@ -823,6 +1074,18 @@ Widget _buildFollowUpTable(FollowUp followUp) {
                 _buildTableRow('4-Hr Temperature', followUp.fourhrTemperature),
                 _buildTableRow('Blood Pressure', followUp.fourhrbloodPressure),
                 _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                _buildTableRow('4-Hr Temperature', followUp.fourhrTemperature),
+                _buildTableRow('Blood Pressure', followUp.fourhrbloodPressure),
+                _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                _buildTableRow('4-Hr Pulse', followUp.fourhrpulse),
+                _buildTableRow(
+                    'Oxygen Saturation', followUp.fourhroxygenSaturation),
+                _buildTableRow('4-Hr Temperature', followUp.fourhrTemperature),
+                _buildTableRow('Blood Pressure', followUp.fourhrbloodPressure),
+                _buildTableRow('Sugar Level', followUp.fourhrbloodSugarLevel),
+                _buildTableRow('Other Vitals', followUp.fourhrotherVitals),
+                _buildTableRow('IV Fluid', followUp.fourhrivFluid),
+                _buildTableRow('Urine Output', followUp.fourhrurine),
               ],
             ),
           ),
