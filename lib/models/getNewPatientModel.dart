@@ -128,17 +128,56 @@ class FollowUp {
   }
 }
 
+class Medicine {
+  final String name;
+  final String morning;
+  final String afternoon;
+  final String night;
+  final String comment;
+
+  Medicine({
+    required this.name,
+    required this.morning,
+    required this.afternoon,
+    required this.night,
+    required this.comment,
+  });
+
+  factory Medicine.fromJson(Map<String, dynamic> json) {
+    return Medicine(
+      name: json['name'] ?? '',
+      morning: json['morning'] ?? '',
+      afternoon: json['afternoon'] ?? '',
+      night: json['night'] ?? '',
+      comment: json['comment'] ?? '',
+    );
+  }
+}
+
+class DoctorPrescription {
+  final Medicine medicine;
+
+  DoctorPrescription({required this.medicine});
+
+  factory DoctorPrescription.fromJson(Map<String, dynamic> json) {
+    return DoctorPrescription(
+      medicine: Medicine.fromJson(json['medicine']),
+    );
+  }
+}
+
 class AdmissionRecord {
   final String id;
   final String admissionDate;
   final String reasonForAdmission;
   final String status;
-  final List<String> doctorPrescrption;
+  final List<String> doctorConsultant;
 
   final String symptoms;
   final String initialDiagnosis;
   final List<dynamic> reports;
   final List<FollowUp> followUps;
+  final List<DoctorPrescription> doctorPrescriptions;
 
   AdmissionRecord({
     required this.id,
@@ -146,11 +185,12 @@ class AdmissionRecord {
     required this.reasonForAdmission,
     required this.symptoms,
     required this.status,
-    required this.doctorPrescrption, // Default to empty list if missing
+    required this.doctorConsultant, // Default to empty list if missing
 
     required this.initialDiagnosis,
     required this.reports,
     required this.followUps,
+    required this.doctorPrescriptions,
   });
 
   factory AdmissionRecord.fromJson(Map<String, dynamic> json) {
@@ -161,11 +201,15 @@ class AdmissionRecord {
       symptoms: json['symptoms'],
       status: json['status'] ?? '' as String,
       initialDiagnosis: json['initialDiagnosis'],
-      doctorPrescrption: List<String>.from(json['doctorPrescrption'] ?? []),
+      doctorConsultant: List<String>.from(json['doctorConsultant'] ?? []),
       reports: json['reports'] ?? [],
       followUps: (json['followUps'] as List<dynamic>)
           .map((e) => FollowUp.fromJson(e))
           .toList(),
+      doctorPrescriptions: (json['doctorPrescriptions'] as List<dynamic>?)
+              ?.map((e) => DoctorPrescription.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 }

@@ -27,8 +27,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
   }
 
   Future<List<String>> _fetchPrescriptions(String admissionId) async {
-    final url =
-        Uri.parse('${VERCEL_URL}/doctors/getPrescriptions/$admissionId');
+    final url = Uri.parse('${BASE_URL}/doctors/getPrescriptions/$admissionId');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     print("the admiison is ${admissionId}");
@@ -54,7 +53,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -207,8 +206,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                   "ieRatio": ieRatioController.text,
                                 };
 
-                                final url = Uri.parse(
-                                    '${VERCEL_URL}/nurse/addFollowUp');
+                                final url =
+                                    Uri.parse('${BASE_URL}/nurse/addFollowUp');
 
                                 try {
                                   final response = await http.post(
@@ -386,8 +385,8 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                   "fourHrUrine": fourHrUrineController.text,
                                 };
 
-                                final url = Uri.parse(
-                                    '${VERCEL_URL}/nurse/addFollowUp');
+                                final url =
+                                    Uri.parse('${BASE_URL}/nurse/addFollowUp');
 
                                 try {
                                   final response = await http.post(

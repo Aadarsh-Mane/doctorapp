@@ -19,7 +19,7 @@ import 'package:pdf/pdf.dart';
 // Fetch Patient History Function
 Future<PatientHistory> fetchPatientHistory(String patientId) async {
   final response =
-      await http.get(Uri.parse('${VERCEL_URL}/patientHistory/$patientId'));
+      await http.get(Uri.parse('${BASE_URL}/patientHistory/$patientId'));
 
   if (response.statusCode == 200) {
     return PatientHistory.fromJson(jsonDecode(response.body));

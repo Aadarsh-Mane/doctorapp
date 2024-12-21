@@ -13,7 +13,7 @@ class AuthRepository {
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('${VERCEL_URL}/users/signin'),
+        Uri.parse('${BASE_URL}/users/signin'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -48,7 +48,7 @@ class AuthRepository {
   Future<String?> loginNurse(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('${VERCEL_URL}/nurse/signin'), // Different URL for nurse
+        Uri.parse('${BASE_URL}/nurse/signin'), // Different URL for nurse
         headers: {
           'Content-Type': 'application/json',
         },
@@ -124,7 +124,7 @@ class AuthRepository {
 
     try {
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
+        Uri.parse('${BASE_URL}/doctors/getAssignedPatients'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -154,7 +154,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/doctors/getDoctorProfile'),
+        Uri.parse('${BASE_URL}/doctors/getDoctorProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -183,7 +183,7 @@ class AuthRepository {
     }
     try {
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/nurse/nurseProfile'),
+        Uri.parse('${BASE_URL}/nurse/nurseProfile'),
         headers: {
           'Authorization': 'Bearer $token',
         },
@@ -213,8 +213,9 @@ class AuthRepository {
   Future<List<Patient1>> fetchPatients() async {
     try {
       final response =
-          await http.get(Uri.parse('${VERCEL_URL}/reception/listPatients'));
-      print(response.body);
+          await http.get(Uri.parse('${BASE_URL}/reception/listPatients'));
+      print("this is the response${response.body}");
+      print("Request URL: ${BASE_URL}/reception/listPatients");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -241,7 +242,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/doctors/getAssignedPatients'),
+        Uri.parse('${BASE_URL}/doctors/getAssignedPatients'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -274,7 +275,7 @@ class AuthRepository {
       }
 
       final response = await http.get(
-        Uri.parse('${VERCEL_URL}/doctors/getAdmittedPatient'),
+        Uri.parse('${BASE_URL}/doctors/getAdmittedPatient'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -303,7 +304,7 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final response = await http.post(
-      Uri.parse('$VERCEL_URL/doctors/admitPatient'),
+      Uri.parse('$BASE_URL/doctors/admitPatient'),
       body: {
         'patientId': patientId,
         'admissionId': admissionId,
@@ -320,7 +321,7 @@ class AuthRepository {
     required String labTestNameGivenByDoctor,
   }) async {
     final token = await getToken(); // Retrieve the token from storage
-    final url = Uri.parse('${VERCEL_URL}/doctors/assignPatient');
+    final url = Uri.parse('${BASE_URL}/doctors/assignPatient');
 
     try {
       final response = await http.post(
@@ -365,7 +366,7 @@ class AuthRepository {
     print("Token: $token");
 
     final response = await http.get(
-      Uri.parse('${VERCEL_URL}/doctors/getDoctorAssignedPatient'),
+      Uri.parse('${BASE_URL}/doctors/getDoctorAssignedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -406,7 +407,7 @@ class AuthRepository {
     final token = await getToken(); // Retrieve the token from storage
 
     final response = await http.post(
-      Uri.parse('${VERCEL_URL}/doctors/dischargePatient'),
+      Uri.parse('${BASE_URL}/doctors/dischargePatient'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -424,7 +425,7 @@ class AuthRepository {
     final token = await getToken(); // Retrieve the token from storage
 
     final response = await http.post(
-      Uri.parse('${VERCEL_URL}/storeFcmToken'),
+      Uri.parse('${BASE_URL}/storeFcmToken'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -445,7 +446,7 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final response = await http.get(
-      Uri.parse('${VERCEL_URL}/doctors/getadmittedPatient'),
+      Uri.parse('${BASE_URL}/doctors/getadmittedPatient'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -474,7 +475,7 @@ class AuthRepository {
       throw Exception('No authentication token found.');
     }
     final response = await http.post(
-      Uri.parse('${VERCEL_URL}/doctors/admitPatient'),
+      Uri.parse('${BASE_URL}/doctors/admitPatient'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token'
@@ -486,6 +487,38 @@ class AuthRepository {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to admit patient: ${response.body}');
+    }
+  }
+
+  Future<void> addPrescription(String patientId, String admissionId,
+      DoctorPrescription doctorPrescription) async {
+    final url = Uri.parse('http://192.168.0.103:3000/doctors/addPresciption');
+    final token = await getToken(); // Fetch your token for authentication
+
+    if (token == null) {
+      throw Exception('Token not found');
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'patientId': patientId,
+        'admissionId': admissionId,
+        'medicine': {
+          'name': doctorPrescription.medicine.name,
+          'morning': doctorPrescription.medicine.morning,
+          'afternoon': doctorPrescription.medicine.afternoon,
+          'night': doctorPrescription.medicine.night,
+          'comment': doctorPrescription.medicine.comment,
+        },
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to add prescription: ${response.statusCode}');
     }
   }
 }

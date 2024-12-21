@@ -1,5 +1,6 @@
 import 'package:doctorapp/Doctor/DoctorPatientHistoryScreen.dart';
 import 'package:doctorapp/constants/Urls.dart';
+import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
 import 'package:http/http.dart' as http;
@@ -28,12 +29,12 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     super.initState();
     // Fetch initial prescriptions
     _prescriptionsFuture =
-        _fetchPrescriptions(widget.patient.admissionRecords.first.id);
+        _fetchConsultant(widget.patient.admissionRecords.first.id);
   }
 
-  Future<void> _addPrescription(
+  Future<void> _addConsultant(
       String patientId, String admissionId, String prescription) async {
-    final url = Uri.parse('${VERCEL_URL}/doctors/addPresciption');
+    final url = Uri.parse('${BASE_URL}/doctors/addConsultant');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
 
@@ -61,7 +62,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
 
         // Refresh the prescriptions
         setState(() {
-          _prescriptionsFuture = _fetchPrescriptions(admissionId);
+          _prescriptionsFuture = _fetchConsultant(admissionId);
         });
       } else {
         throw Exception('Failed to add prescription: ${response.body}');
@@ -73,9 +74,44 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     }
   }
 
-  Future<List<String>> _fetchPrescriptions(String admissionId) async {
-    final url =
-        Uri.parse('${VERCEL_URL}/doctors/getPrescriptions/$admissionId');
+  Future<void> addPrescription(String patientId, String admissionId,
+      DoctorPrescription doctorPrescription) async {
+    final url = Uri.parse('http://192.168.0.103:3000/doctors/addPresciption');
+    // final token = await getToken(); // Fetch your token for authentication
+
+    // if (token == null) {
+    //   throw Exception('Token not found');
+    // }
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'patientId': patientId,
+        'admissionId': admissionId,
+        'prescription': {
+          'medicine': {
+            'name': doctorPrescription.medicine.name,
+            'morning': doctorPrescription.medicine.morning,
+            'afternoon': doctorPrescription.medicine.afternoon,
+            'night': doctorPrescription.medicine.night,
+            'comment': doctorPrescription.medicine.comment,
+          },
+        }
+      }),
+    );
+
+    print("checkong ${response.body}");
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to add prescription: ${response.statusCode}');
+    }
+  }
+
+  Future<List<String>> _fetchConsultant(String admissionId) async {
+    final url = Uri.parse('${BASE_URL}/doctors/getConsultant/$admissionId');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('auth_token');
     print("the admiison is ${admissionId}");
@@ -97,15 +133,101 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
   }
 
   void _openAddPrescriptionDialog(String patientId, String admissionId) {
+    final medicineNameController = TextEditingController();
+    final morningController = TextEditingController();
+    final afternoonController = TextEditingController();
+    final nightController = TextEditingController();
+    final commentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add Prescription'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: medicineNameController,
+                decoration: const InputDecoration(labelText: 'Medicine Name'),
+              ),
+              TextField(
+                controller: morningController,
+                decoration: const InputDecoration(labelText: 'Morning Dosage'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: afternoonController,
+                decoration:
+                    const InputDecoration(labelText: 'Afternoon Dosage'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: nightController,
+                decoration: const InputDecoration(labelText: 'Night Dosage'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: commentController,
+                decoration: const InputDecoration(labelText: 'Comment'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final medicine = Medicine(
+                  name: medicineNameController.text,
+                  morning: morningController.text,
+                  afternoon: afternoonController.text,
+                  night: nightController.text,
+                  comment: commentController.text,
+                );
+
+                final doctorPrescription =
+                    DoctorPrescription(medicine: medicine);
+
+                try {
+                  await addPrescription(
+                      patientId, admissionId, doctorPrescription);
+
+                  // Refresh the data after adding the prescription
+                  setState(() {
+                    _fetchPrescriptions(patientId, admissionId);
+                  });
+
+                  Navigator.of(context).pop(); // Close the dialog
+                } catch (e) {
+                  print('Error adding prescription: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: $e')),
+                  );
+                }
+              },
+              child: const Text('Add Prescription'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openAddConsultantDialog(String patientId, String admissionId) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Add Prescription'),
+          title: Text('Add Consultant'),
           content: TextField(
             controller: _prescriptionController,
             decoration: InputDecoration(
-              labelText: 'Enter Prescription',
+              labelText: 'Enter Consultant',
               border: OutlineInputBorder(),
             ),
             maxLines: 3,
@@ -125,17 +247,17 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
                   final now = DateTime.now();
                   final formattedDateTime =
                       '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-                  final prescriptionWithDateTime =
+                  final consultantWithDateTime =
                       '$prescription $formattedDateTime';
 
-                  await _addPrescription(
-                      patientId, admissionId, prescriptionWithDateTime);
+                  await _addConsultant(
+                      patientId, admissionId, consultantWithDateTime);
 
                   _prescriptionController.clear();
                   Navigator.pop(context);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Prescription cannot be empty!')),
+                    SnackBar(content: Text('consultant cannot be empty!')),
                   );
                 }
               },
@@ -524,7 +646,7 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
     String? token = prefs.getString('auth_token');
 
     final url = Uri.parse(
-        '${VERCEL_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
+        '${BASE_URL}/nurse/followups/$admissionId'); // API endpoint for fetching follow-ups
     try {
       final response = await http.get(
         url,
@@ -540,6 +662,42 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
       }
     } catch (e) {
       throw Exception('Error fetching follow-ups: $e');
+    }
+  }
+
+  Future<List<DoctorPrescription>> _fetchPrescriptions(
+      String patientId, String admissionId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    final url = Uri.parse(
+        'http://192.168.0.103:3000/doctors/getPrescription/$patientId/$admissionId');
+
+    if (token == null) {
+      throw Exception('Token not found');
+    }
+
+    final response = await http.get(
+      url,
+    );
+    print(response.body); // Print the response body to inspect it
+
+    if (response.statusCode == 200) {
+      // Assuming the response body contains a "prescriptions" array
+      final Map<String, dynamic> responseData = json.decode(response.body);
+
+      // Extract the "prescriptions" array
+      final prescriptionsList = responseData['prescriptions'];
+
+      if (prescriptionsList != null && prescriptionsList is List) {
+        // Convert each item in the list to a DoctorPrescription object
+        return prescriptionsList
+            .map((data) => DoctorPrescription.fromJson(data))
+            .toList();
+      } else {
+        throw Exception('No prescriptions data found');
+      }
+    } else {
+      throw Exception('Failed to fetch prescriptions: ${response.statusCode}');
     }
   }
 
@@ -624,329 +782,395 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
             _fetchFollowUps(widget.patient.admissionRecords.first.id);
           });
         },
-        child: SingleChildScrollView(
+        child: ListView(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                ),
-                elevation: 8,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.teal[100],
-                        child: Icon(Icons.person, size: 30, color: Colors.teal),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 500),
-                              child: Text('${widget.patient.name}',
-                                  key: ValueKey(widget.patient.name),
-                                  style: const TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Patient ID: ${widget.patient.patientId}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Age: ${widget.patient.age}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Gender: ${widget.patient.gender}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Contact: ${widget.patient.contact}',
-                                style: const TextStyle(fontSize: 16)),
-                            Text('Address: ${widget.patient.address}',
-                                style: const TextStyle(fontSize: 16)),
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final followUps = await _fetchFollowUps(
-                                  widget.patient.admissionRecords.first.id,
-                                );
-                                generatePdf(followUps, context);
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 12, horizontal: 16),
-                              ),
-                              icon: const Icon(
-                                Icons.picture_as_pdf,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                'Generate PDF',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
               ),
-              const SizedBox(height: 20),
-              const Text('Admission Records:',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Column(
-                children: widget.patient.admissionRecords.map((record) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15.0),
+              elevation: 8,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.teal[100],
+                      child: Icon(Icons.person, size: 30, color: Colors.teal),
                     ),
-                    elevation: 6,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
+                    const SizedBox(width: 16),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Reason: ${record.reasonForAdmission}',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                          Text('Date: ${record.admissionDate}',
-                              style: const TextStyle(fontSize: 16)),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 500),
+                            child: Text('${widget.patient.name}',
+                                key: ValueKey(widget.patient.name),
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.bold)),
+                          ),
                           const SizedBox(height: 8),
-                          Text('Symptoms: ${record.symptoms}',
+                          Text('Patient ID: ${widget.patient.patientId}',
                               style: const TextStyle(fontSize: 16)),
-                          Text('Initial Diagnosis: ${record.initialDiagnosis}',
+                          Text('Age: ${widget.patient.age}',
                               style: const TextStyle(fontSize: 16)),
-                          // ElevatedButton(
-                          //   onPressed: () => _openAddPrescriptionDialog(
-                          //       widget.patient.patientId, record.id),
-                          //   child: Text('Add Prescription'),
-                          // ),
-                          FutureBuilder<List<String>>(
-                            future: _prescriptionsFuture,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 16.0),
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                );
-                              }
-                              if (snapshot.hasError) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(
-                                    'Error loading prescriptions: ${snapshot.error}',
-                                    style: const TextStyle(
-                                      color: Colors.red,
-                                      fontSize: 14,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                );
-                              }
+                          Text('Gender: ${widget.patient.gender}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Contact: ${widget.patient.contact}',
+                              style: const TextStyle(fontSize: 16)),
+                          Text('Address: ${widget.patient.address}',
+                              style: const TextStyle(fontSize: 16)),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              final followUps = await _fetchFollowUps(
+                                widget.patient.admissionRecords.first.id,
+                              );
+                              generatePdf(followUps, context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.teal,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 12, horizontal: 16),
+                            ),
+                            icon: const Icon(
+                              Icons.picture_as_pdf,
+                              size: 18,
+                            ),
+                            label: const Text(
+                              'Generate PDF',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text('Admission Records:',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            ...widget.patient.admissionRecords.map((record) {
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                ),
+                elevation: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Reason: ${record.reasonForAdmission}',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Date: ${record.admissionDate}',
+                          style: const TextStyle(fontSize: 16)),
+                      const SizedBox(height: 8),
+                      Text('Symptoms: ${record.symptoms}',
+                          style: const TextStyle(fontSize: 16)),
+                      Text('Initial Diagnosis: ${record.initialDiagnosis}',
+                          style: const TextStyle(fontSize: 16)),
+                      // FutureBuilder for prescriptions
+                      FutureBuilder<List<String>>(
+                        future: _prescriptionsFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                'Error loading consultant: ${snapshot.error}',
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            );
+                          }
 
-                              final prescriptions = snapshot.data ?? [];
-                              if (prescriptions.isEmpty) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8.0),
-                                  child: Text(
-                                    'No prescriptions available.',
+                          final doctorConsultant = snapshot.data ?? [];
+                          if (doctorConsultant.isEmpty) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(
+                                'No prescriptions available.',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: doctorConsultant.map((consultant) {
+                              return Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 6.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                elevation: 2,
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.medical_services_outlined,
+                                    color: Colors.teal[600],
+                                    size: 28,
+                                  ),
+                                  title: Text(
+                                    'Consultant: $consultant',
                                     style: const TextStyle(
                                       fontSize: 14,
-                                      fontStyle: FontStyle.italic,
-                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                );
-                              }
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      FutureBuilder<List<DoctorPrescription>>(
+                        future: _fetchPrescriptions(widget.patient.patientId,
+                            widget.patient.admissionRecords.first.id),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: prescriptions.map((prescription) {
-                                  return Card(
-                                    margin: const EdgeInsets.symmetric(
-                                        vertical: 6.0),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                    ),
-                                    elevation: 2,
-                                    child: ListTile(
-                                      leading: Icon(
-                                        Icons.medical_services_outlined,
-                                        color: Colors.teal[600],
-                                        size: 28,
-                                      ),
-                                      title: Text(
-                                        'Consultant: $prescription',
+                          if (snapshot.hasError) {
+                            return Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                'Error: ${snapshot.error}',
+                                style: const TextStyle(
+                                    color: Colors.red, fontSize: 14),
+                              ),
+                            );
+                          }
+
+                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Text(
+                                'No prescriptions found.',
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 14),
+                              ),
+                            );
+                          }
+
+                          // Prescriptions are available
+                          final prescriptions = snapshot.data!;
+
+                          return ListView.builder(
+                            shrinkWrap:
+                                true, // Ensures it doesn't cause layout issues
+                            physics:
+                                const NeverScrollableScrollPhysics(), // Avoid nested scroll
+                            itemCount: prescriptions.length,
+                            itemBuilder: (context, index) {
+                              final prescription = prescriptions[index];
+                              return Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                elevation: 3,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Medicine: ${prescription.medicine.name}',
                                         style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                          'Morning: ${prescription.medicine.morning}'),
+                                      Text(
+                                          'Afternoon: ${prescription.medicine.afternoon}'),
+                                      Text(
+                                          'Night: ${prescription.medicine.night}'),
+                                      if (prescription
+                                          .medicine.comment.isNotEmpty)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
+                                          child: Text(
+                                            'Comment: ${prescription.medicine.comment}',
+                                            style: const TextStyle(
+                                                fontStyle: FontStyle.italic),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
                               );
                             },
-                          ),
+                          );
+                        },
+                      ),
+                      SizedBox(height: 8),
+                      FutureBuilder<List<FollowUp>>(
+                        future: _fetchFollowUps(record.id),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+                          if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          }
 
-                          const SizedBox(height: 8),
-                          FutureBuilder<List<FollowUp>>(
-                            future: _fetchFollowUps(record.id),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(
-                                    child: CircularProgressIndicator());
-                              }
-                              if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              }
+                          var followUps = snapshot.data ?? [];
+                          if (followUps.isEmpty) {
+                            return const Text(
+                              'No follow-ups available.',
+                              style: TextStyle(fontSize: 14),
+                            );
+                          }
 
-                              var followUps = snapshot.data ?? [];
-                              if (followUps.isEmpty) {
-                                return const Text(
-                                  'No follow-ups available.',
-                                  style: TextStyle(fontSize: 14),
-                                );
-                              }
+                          final dateFormat = DateFormat('d/M/yyyy, HH:mm:ss');
 
-                              final dateFormat =
-                                  DateFormat('d/M/yyyy, HH:mm:ss');
-
-                              // Sort follow-ups by date (newest first)
-                              followUps.sort((a, b) {
-                                final dateA = dateFormat.parse(a.date);
-                                final dateB = dateFormat.parse(b.date);
-                                return dateB.compareTo(dateA);
-                              });
-                              final latestFollowUp = followUps.first;
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Latest Follow-Up:',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
-                                  AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 500),
-                                    opacity: 1.0,
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4.0, horizontal: 8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                          // Sort follow-ups by date (newest first)
+                          followUps.sort((a, b) {
+                            final dateA = dateFormat.parse(a.date);
+                            final dateB = dateFormat.parse(b.date);
+                            return dateB.compareTo(dateA);
+                          });
+                          final latestFollowUp = followUps.first;
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text('Latest Follow-Up:',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold)),
+                              AnimatedOpacity(
+                                duration: const Duration(milliseconds: 500),
+                                opacity: 1.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 4.0, horizontal: 8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Date: ${latestFollowUp.date}',
+                                          style: const TextStyle(fontSize: 14)),
+                                      Text('Notes: ${latestFollowUp.notes}',
+                                          style: const TextStyle(fontSize: 14)),
+                                      Text(
+                                          'Temperature: ${latestFollowUp.temperature}',
+                                          style: const TextStyle(fontSize: 14)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const Text(
+                                'Follow-Ups:',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              ...followUps.map((followUp) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 4.0),
+                                  child: Align(
+                                    alignment:
+                                        Alignment.center, // Center the dropdown
+                                    child: Container(
+                                      width:
+                                          400, // Adjust width to make it smaller for desktop
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                            color: Colors.grey.shade400),
+                                        color: Colors.white,
+                                      ),
+                                      child: ExpansionTile(
+                                        title: Text(
+                                          'Date: ${followUp.date}',
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
+                                        subtitle: Text(
+                                          'Time: ${followUp.date.split(',').last.trim()}',
+                                          style: const TextStyle(
+                                              fontSize: 12, color: Colors.grey),
+                                        ),
                                         children: [
-                                          Text('Date: ${latestFollowUp.date}',
-                                              style: const TextStyle(
-                                                  fontSize: 14)),
-                                          Text('Notes: ${latestFollowUp.notes}',
-                                              style: const TextStyle(
-                                                  fontSize: 14)),
-                                          Text(
-                                              'Temperature: ${latestFollowUp.temperature}',
-                                              style: const TextStyle(
-                                                  fontSize: 14)),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0),
+                                            child:
+                                                _buildFollowUpTable(followUp),
+                                          ),
                                         ],
                                       ),
                                     ),
                                   ),
-                                  const Text(
-                                    'Follow-Ups:',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ...followUps.map((followUp) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 4.0),
-                                      child: Align(
-                                        alignment: Alignment
-                                            .center, // Center the dropdown
-                                        child: Container(
-                                          width:
-                                              400, // Adjust width to make it smaller for desktop
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                color: Colors.grey.shade400),
-                                            color: Colors
-                                                .white, // Background color for dropdown
-                                          ),
-                                          child: ExpansionTile(
-                                            title: Text(
-                                              'Date: ${followUp.date}',
-                                              style:
-                                                  const TextStyle(fontSize: 14),
-                                            ),
-                                            subtitle: Text(
-                                              'Time: ${followUp.date.split(',').last.trim()}',
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                            ),
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 16.0),
-                                                child: _buildFollowUpTable(
-                                                    followUp),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      PatientHistoryDetailsScreen(
-                                          patientId: widget.patient.patientId),
-                                ),
-                              );
-                            },
-                            child: Text('Cancel'),
-                          )
-                        ],
+                                );
+                              }).toList(),
+                            ],
+                          );
+                        },
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PatientHistoryDetailsScreen(
+                                  patientId: widget.patient.patientId),
+                            ),
+                          );
+                        },
+                        child: Text('Cancel'),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
         ),
       ),
       floatingActionButton: Container(

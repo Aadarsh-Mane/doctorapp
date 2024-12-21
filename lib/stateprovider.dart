@@ -79,7 +79,7 @@ class LabPatientsNotifier extends StateNotifier<List<LabPatient>> {
 
   Future<void> fetchLabPatients() async {
     final response =
-        await http.get(Uri.parse('${VERCEL_URL}/labs/getlabPatients'));
+        await http.get(Uri.parse('${BASE_URL}/labs/getlabPatients'));
     print(response.body);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -115,7 +115,7 @@ class FollowUpsNotifier extends StateNotifier<List<FollowUp>> {
 
   Future<void> fetchFollowUps(String admissionId) async {
     try {
-      final url = '${VERCEL_URL}/nurse/followups/$admissionId';
+      final url = '${BASE_URL}/nurse/followups/$admissionId';
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
