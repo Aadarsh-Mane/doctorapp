@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   opacity: _opacityHospital,
                   duration: Duration(seconds: 1),
                   child: Image.asset(
-                    'assets/images/spanddd.jpeg', // Replace with your logo path
+                    'assets/images/tambe.png', // Replace with your logo path
                     height: 150,
                   ),
                 ),
@@ -107,7 +107,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   opacity: _opacityHospital,
                   duration: Duration(seconds: 1),
                   child: Text(
-                    'Spandan Hospital',
+                    'Tambe Hospital',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

@@ -86,7 +86,7 @@ class _AssignedPatientsScreenState
                 ),
               ),
               child: Card(
-                color: Colors.black, // Black background for the card
+                color: Colors.white, // Black background for the card
                 elevation: 8.0, // Add shadow for the card
                 margin:
                     const EdgeInsets.symmetric(vertical: 10, horizontal: 15),

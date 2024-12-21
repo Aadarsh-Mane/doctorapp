@@ -172,7 +172,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> imgList = [
-    'assets/images/span.png',
+    'assets/images/tam.png',
     'assets/images/spandd.png',
     'assets/images/spando.png',
   ];
@@ -224,7 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'Welcome to the Spandan Hospital',
+              'Welcome to the Tambe Hospital',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),

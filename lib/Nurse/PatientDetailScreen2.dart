@@ -704,23 +704,25 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                               if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
                               }
+
                               var followUps = snapshot.data ?? [];
                               if (followUps.isEmpty) {
-                                return const Text('No follow-ups available.',
-                                    style: TextStyle(fontSize: 14));
+                                return const Text(
+                                  'No follow-ups available.',
+                                  style: TextStyle(fontSize: 14),
+                                );
                               }
 
                               final dateFormat =
                                   DateFormat('d/M/yyyy, HH:mm:ss');
 
+                              // Sort follow-ups by date (newest first)
                               followUps.sort((a, b) {
                                 final dateA = dateFormat.parse(a.date);
                                 final dateB = dateFormat.parse(b.date);
-                                return dateB.compareTo(dateA); // Newest first
+                                return dateB.compareTo(dateA);
                               });
-
                               final latestFollowUp = followUps.first;
-
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -752,19 +754,54 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen2> {
                                       ),
                                     ),
                                   ),
-                                  const Divider(),
-                                  const Text('All Follow-Ups:',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold)),
+                                  const Text(
+                                    'Follow-Ups:',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 8),
                                   ...followUps.map((followUp) {
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 4.0, horizontal: 8.0),
-                                      child: AnimatedSize(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        child: _buildFollowUpTable(followUp),
+                                          vertical: 4.0),
+                                      child: Align(
+                                        alignment: Alignment
+                                            .center, // Center the dropdown
+                                        child: Container(
+                                          width:
+                                              400, // Adjust width to make it smaller for desktop
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                            border: Border.all(
+                                                color: Colors.grey.shade400),
+                                            color: Colors
+                                                .white, // Background color for dropdown
+                                          ),
+                                          child: ExpansionTile(
+                                            title: Text(
+                                              'Date: ${followUp.date}',
+                                              style:
+                                                  const TextStyle(fontSize: 14),
+                                            ),
+                                            subtitle: Text(
+                                              'Time: ${followUp.date.split(',').last.trim()}',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                            ),
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
+                                                child: _buildFollowUpTable(
+                                                    followUp),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     );
                                   }).toList(),

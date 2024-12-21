@@ -51,7 +51,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 SizedBox(height: 20),
                 // Welcome text
                 Text(
-                  "Welcome to Spandan Hospital",
+                  "Welcome to Tambe Hospital",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: isPortrait ? 24 : 28,
