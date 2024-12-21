@@ -1180,17 +1180,19 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
         type: ExpandableFabType.up, // Expand upwards
         children: [
           FloatingActionButton.extended(
-            label: Text('Add Prescription'),
+            label: Text('Add consultant'),
             heroTag: 'fab2',
             onPressed: () {
-              print('Action 2');
+              _openAddConsultantDialog(widget.patient.patientId,
+                  widget.patient.admissionRecords.first.id);
             },
           ),
           FloatingActionButton.extended(
-            label: Text('Add Follow-Up'),
+            label: Text('Add  Prescription'),
             heroTag: 'fab2',
             onPressed: () {
-              print('Action 2');
+              _openAddPrescriptionDialog(widget.patient.patientId,
+                  widget.patient.admissionRecords.first.id);
             },
           ),
           // FloatingActionButton.small(
