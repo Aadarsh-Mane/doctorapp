@@ -3,6 +3,7 @@ import 'package:doctorapp/constants/Urls.dart';
 import 'package:doctorapp/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:doctorapp/models/getNewPatientModel.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1173,21 +1174,33 @@ class _PatientDetailScreen2State extends State<PatientDetailScreen4> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(
-            bottom: 20), // Moves the button up by 20 pixels
-        child: FloatingActionButton(
-          onPressed: () {
-            // Handle the action for adding a prescription
-            _openAddPrescriptionDialog(
-              widget.patient.patientId,
-              widget.patient.admissionRecords.first.id,
-            );
-          },
-          backgroundColor: Colors.teal,
-          elevation: 8, // Adds elevation to the button
-          child: const Icon(Icons.add, color: Colors.white),
-        ),
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: ExpandableFab(
+        distance: 100.0, // Distance between buttons
+        type: ExpandableFabType.up, // Expand upwards
+        children: [
+          FloatingActionButton.extended(
+            label: Text('Add Prescription'),
+            heroTag: 'fab2',
+            onPressed: () {
+              print('Action 2');
+            },
+          ),
+          FloatingActionButton.extended(
+            label: Text('Add Follow-Up'),
+            heroTag: 'fab2',
+            onPressed: () {
+              print('Action 2');
+            },
+          ),
+          // FloatingActionButton.small(
+          //   heroTag: 'fab3',
+          //   onPressed: () {
+          //     print('Action 3');
+          //   },
+          //   child: Icon(Icons.camera),
+          // ),
+        ],
       ),
     );
   }
